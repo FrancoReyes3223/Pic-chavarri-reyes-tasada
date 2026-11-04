@@ -70,6 +70,22 @@ Sirve como base para la sección "Uso de IA" del informe.
 
 ---
 
+## 6. Análisis de overfitting y guardado del modelo ganador
+
+**Fecha:** 04/11/2026
+**Prompt:**
+> seguimos con el paso de terminar el modelo. asi podemos ya guardar el modelo ganador y seguir avanzando
+
+**Resultado:** agregó al final de [`backend/entrenamiento.py`](backend/entrenamiento.py):
+- un análisis de overfitting: entrena el árbol con `max_depth` de 1 a 20 y grafica el MAE de train y test en [`backend/app/overfitting_arbol.png`](backend/app/overfitting_arbol.png);
+- el guardado del modelo ganador con `joblib` en `backend/app/modelo.pkl`, junto con su nombre y la lista de features.
+
+Al correrlo: gana el árbol con `max_depth=5` (MAE test 1.038, R² 0.869), muy cerca de la regresión lineal (MAE test 1.069). La profundidad con menor error en test es 4; con `max_depth=20` el MAE de train baja a 0.07 pero el de test sube a 1.27 (overfitting).
+
+**Por qué fue útil:** deja el modelo listo para que el backend lo cargue sin reentrenar, y el gráfico sirve para el informe.
+
+---
+
 ## Casos en que la IA se equivocó o propuso algo que no queríamos
 
 | Situación | Cómo nos dimos cuenta | Qué hicimos |
