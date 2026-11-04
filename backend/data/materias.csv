@@ -1,0 +1,46 @@
+materia_id,nombre,carrera,anio
+M01,Análisis Matemático I,Sistemas,1
+M02,Álgebra y Geometría Analítica,Sistemas,1
+M03,Algoritmos y Estructuras de Datos,Sistemas,1
+M04,Análisis Matemático II,Sistemas,2
+M05,Paradigmas de Programación,Sistemas,2
+M06,Arquitectura de Computadoras,Sistemas,2
+M07,Sistemas Operativos,Sistemas,3
+M08,Bases de Datos,Sistemas,3
+M09,Probabilidad y Estadística,Sistemas,3
+M10,Redes de Datos,Sistemas,4
+M11,Ingeniería de Software,Sistemas,4
+M12,Teoría de la Computación,Sistemas,4
+M13,Inteligencia Artificial,Sistemas,5
+M14,Seguridad Informática,Sistemas,5
+M15,Proyecto Final (Sistemas),Sistemas,5
+M16,Física I,Industrial,1
+M17,Química General,Industrial,1
+M18,Sistemas de Representación,Industrial,1
+M19,Física II,Industrial,2
+M20,Termodinámica,Industrial,2
+M21,Economía General,Industrial,2
+M22,Investigación Operativa,Industrial,3
+M23,Resistencia de Materiales,Industrial,3
+M24,Costos Industriales,Industrial,3
+M25,Procesos Industriales,Industrial,4
+M26,Logística,Industrial,4
+M27,Higiene y Seguridad,Industrial,4
+M28,Gestión de la Calidad,Industrial,5
+M29,Planificación de la Producción,Industrial,5
+M30,Proyecto Final (Industrial),Industrial,5
+M31,Introducción a la Ingeniería Civil,Civil,1
+M32,Geología Aplicada,Civil,1
+M33,Dibujo Técnico,Civil,1
+M34,Estabilidad I,Civil,2
+M35,Tecnología de los Materiales,Civil,2
+M36,Topografía,Civil,2
+M37,Estabilidad II,Civil,3
+M38,Hidráulica,Civil,3
+M39,Mecánica de Suelos,Civil,3
+M40,Hormigón Armado,Civil,4
+M41,Vías de Comunicación,Civil,4
+M42,Instalaciones Sanitarias,Civil,4
+M43,Estructuras Metálicas,Civil,5
+M44,Obras Hidráulicas,Civil,5
+M45,Proyecto Final (Civil),Civil,5
