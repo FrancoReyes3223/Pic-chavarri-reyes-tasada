@@ -16,7 +16,7 @@ pares de materias → **modelo de regresión** predice estudiantes afectados →
 - El **umbral de conflicto** se aplica en el backend al armar el grafo, no en el dataset. Es el slider del frontend.
 - El coloreo greedy **lo implementamos nosotros**. `nx.greedy_color` solo se usa para validar el resultado.
 - Modelos permitidos por el enunciado: regresión lineal, regresión logística, KNN, SVM y árboles de decisión.
-- El análisis de over/underfitting va en el notebook de entrenamiento, no en el generador.
+- El análisis de over/underfitting va en el script de entrenamiento (`backend/entrenamiento.py`), no en el generador.
 
 ## Estructura
 
@@ -26,8 +26,8 @@ backend/
   data/materias.csv               45 materias (3 carreras × 5 años × 3 materias) = nodos
   data/pares_historico.csv        990 pares × 8 períodos = 7920 filas (entrenamiento)
   data/pares_proximo_periodo.csv  features del período a planificar, sin target
+  entrenamiento.py                entrena modelos, compara métricas y exporta modelo y gráficos
   requirements.txt
-  notebooks/                      (pendiente) entrenamiento.ipynb
   app/                            (pendiente) modelo.py, grafo.py, coloreo.py, main.py (FastAPI)
 frontend/                         (pendiente) React + TypeScript (Vite)
 prompts_ia.md                     registro de prompts para la sección "Uso de IA" del informe
@@ -41,13 +41,20 @@ prompts_ia.md                     registro de prompts para la sección "Uso de I
 
 ## Cómo correr
 
-Entorno de desarrollo: Windows, Python 3.13 y un entorno virtual en `backend/.venv`.
+Entorno virtual en `backend/.venv`:
 
-```
-cd backend
-.venv\Scripts\activate
-python data/generar_dataset.py
-```
+- **Linux / Git Bash:**
+  ```bash
+  cd backend
+  source .venv/bin/activate
+  python entrenamiento.py
+  ```
+- **Windows:**
+  ```bash
+  cd backend
+  .venv\Scripts\activate
+  python entrenamiento.py
+  ```
 
 Si se corre desde Git Bash, usar `PYTHONIOENCODING=utf-8 .venv/Scripts/python ...`, porque la salida tiene acentos.
 

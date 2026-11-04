@@ -55,6 +55,19 @@ Sirve como base para la sección "Uso de IA" del informe.
 
 **Por qué fue útil:** los dos integrantes trabajamos con el mismo contexto, y la IA no vuelve a proponer cosas que ya descartamos (por ejemplo, clasificación).
 
+## 5. Migración de notebook a script independiente y entrenamiento de modelos
+
+**Fecha:** 04/11/2026
+**Prompt:**
+> pero por que usamos cuadernos??? yo pense que eso era por una cuestion didactica que usaba el profesor para impartir las clases, no que es necesario usar un notebook para entrenar?? o me equivoco
+
+**Resultado:** Se acordó prescindir de Jupyter y estructurar todo el flujo de Machine Learning en [`backend/entrenamiento.py`](backend/entrenamiento.py). El script realiza EDA con guardado de histograma, partición temporal (períodos 1-6 train, 7-8 test) y comparación de 3 modelos (`LinearRegression`, `DecisionTreeRegressor`, `KNeighborsRegressor`).
+
+**Correcciones nuestras:**
+- Reemplazamos la idea inicial del notebook por un script Python ejecutable desde consola.
+
+**Por qué fue útil:** Simplificó el entorno de desarrollo y dejó el código listo para integrarse directamente con los módulos del backend.
+
 ---
 
 ## Casos en que la IA se equivocó o propuso algo que no queríamos
@@ -62,4 +75,5 @@ Sirve como base para la sección "Uso de IA" del informe.
 | Situación | Cómo nos dimos cuenta | Qué hicimos |
 |---|---|---|
 | Agregó la variable de clasificación `hubo_conflicto` aunque íbamos a usar regresión | Revisando el código generado | Le pedimos que la eliminara |
-| Metió el entrenamiento de modelos dentro del generador de datos (`--verificar`) | Nos dio resultados para determinar el under/overfitting aunque unicamnente habiamos generado la database| Lo sacamos y lo dejamos para cuando implementemos y entrenemos los modelos reales|
+| Metió el entrenamiento de modelos dentro del generador de datos (`--verificar`) | Nos dio resultados para determinar el under/overfitting aunque unicamnente habiamos generado la database | Lo sacamos y lo dejamos para cuando implementemos y entrenemos los modelos reales |
+| Asumió el uso de Jupyter Notebook (.ipynb) agregando dependencias innecesarias | Cuestionando la necesidad técnica del notebook | Reemplazamos el plan por el script `entrenamiento.py` directo |
