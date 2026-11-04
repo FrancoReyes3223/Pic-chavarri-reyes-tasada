@@ -41,7 +41,7 @@ Sirve como base para la sección "Uso de IA" del informe.
 **Correcciones nuestras:**
 - Incluía también una variable de clasificación (`hubo_conflicto`). Como elegimos regresión, lo eliminamos.
 
-
+---
 
 ## 4. Configuración de Claude Code para el proyecto
 
@@ -53,36 +53,27 @@ Sirve como base para la sección "Uso de IA" del informe.
 - [`CLAUDE.md`](.claude/CLAUDE.md): contexto del proyecto, decisiones ya tomadas, estructura, cómo correr y convenciones.
 - Tres skills: `registrar-prompt` (mantiene este archivo), `regenerar-dataset` y `preparar-defensa`.
 
-**Por qué fue útil:** los dos integrantes trabajamos con el mismo contexto, y la IA no vuelve a proponer cosas que ya descartamos (por ejemplo, clasificación).
-
-## 5. Migración de notebook a script independiente y entrenamiento de modelos
-
-**Fecha:** 04/11/2026
-**Prompt:**
-> pero por que usamos cuadernos??? yo pense que eso era por una cuestion didactica que usaba el profesor para impartir las clases, no que es necesario usar un notebook para entrenar?? o me equivoco
-
-**Resultado:** Se acordó prescindir de Jupyter y estructurar todo el flujo de Machine Learning en [`backend/entrenamiento.py`](backend/entrenamiento.py). El script realiza EDA con guardado de histograma, partición temporal (períodos 1-6 train, 7-8 test) y comparación de 3 modelos (`LinearRegression`, `DecisionTreeRegressor`, `KNeighborsRegressor`).
-
-**Correcciones nuestras:**
-- Reemplazamos la idea inicial del notebook por un script Python ejecutable desde consola.
-
-**Por qué fue útil:** Simplificó el entorno de desarrollo y dejó el código listo para integrarse directamente con los módulos del backend.
+**Por qué fue útil:** los tres integrantes trabajamos con el mismo contexto, y la IA no vuelve a proponer cosas que ya descartamos (por ejemplo, clasificación).
 
 ---
 
-## 6. Análisis de overfitting y guardado del modelo ganador
+## 5. Escalado para KNN y selección de modelos con cross-validation
 
 **Fecha:** 04/11/2026
 **Prompt:**
-> seguimos con el paso de terminar el modelo. asi podemos ya guardar el modelo ganador y seguir avanzando
+> No me terminan de cuadrar los resultados de KNN, dan demasiado mal aunque el modelo deberia funcionar correctamente para el contexto, puede ser que no esten escaladas las features?
 
-**Resultado:** agregó al final de [`backend/entrenamiento.py`](backend/entrenamiento.py):
-- un análisis de overfitting: entrena el árbol con `max_depth` de 1 a 20 y grafica el MAE de train y test en [`backend/app/overfitting_arbol.png`](backend/app/overfitting_arbol.png);
-- el guardado del modelo ganador con `joblib` en `backend/app/modelo.pkl`, junto con su nombre y la lista de features.
+**Resultado:** explicó que el árbol no era realmente mejor: KNN usa distancias y estaba en desventaja porque las features no estaban escaladas (`inscriptos_prom` va de 35 a 219 y `mismo_anio` vale 0 o 1). Cambió [`backend/entrenamiento.py`](backend/entrenamiento.py):
+- KNN ahora va en un pipeline con `StandardScaler`.
+- Los hiperparámetros (`max_depth` del árbol, `k` de KNN) y el modelo ganador se eligen con `GridSearchCV` sobre train, usando `GroupKFold` por período. Antes se elegían mirando el test.
+- El test se usa una sola vez, al final.
+- El gráfico de overfitting ahora compara train contra validación.
 
-Al correrlo: gana el árbol con `max_depth=5` (MAE test 1.038, R² 0.869), muy cerca de la regresión lineal (MAE test 1.069). La profundidad con menor error en test es 4; con `max_depth=20` el MAE de train baja a 0.07 pero el de test sube a 1.27 (overfitting).
+Resultado: gana KNN con k=15 (MAE CV 0.946; MAE test 1.021, R² 0.886). El árbol queda con `max_depth=5` (MAE test 1.038) y la regresión lineal con MAE test 1.069.
 
-**Por qué fue útil:** deja el modelo listo para que el backend lo cargue sin reentrenar, y el gráfico sirve para el informe.
+**Correcciones nuestras:** el script original elegía el mejor modelo y la mejor profundidad con el MAE de test, y no escalaba las features para KNN.
+
+**Por qué fue útil:** el MAE de test que reportamos ahora es una estimación honesta, escalando las features de forma justa para KNN y porque el test no participó en ninguna decisión.
 
 ---
 

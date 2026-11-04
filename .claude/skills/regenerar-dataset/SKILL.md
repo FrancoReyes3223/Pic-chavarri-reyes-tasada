@@ -24,5 +24,6 @@ description: Regenera los CSV del dataset sintético con backend/data/generar_da
 
 - Actualizar el docstring del generador (sección REGLAS) para que coincida con el código. Es lo que se cita en el informe.
 - Si cambian las cantidades de arriba, actualizar esta referencia y la sección "Estructura" de `.claude/CLAUDE.md`.
-- No meter entrenamiento de modelos en el generador: eso va en el notebook.
+- No meter entrenamiento de modelos en el generador: eso va en `backend/entrenamiento.py`.
+- Después de regenerar, volver a correr `entrenamiento.py` (desde `backend/`) para actualizar `app/modelo.pkl` y los gráficos. Si cambian los resultados, actualizar la tabla "Resultados actuales del modelo" de `.claude/CLAUDE.md`.
 - Mantener la regla de no fuga de información: las features solo pueden usar períodos **anteriores**.

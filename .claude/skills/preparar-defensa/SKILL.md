@@ -26,3 +26,7 @@ Al final, proponer 3 preguntas del estilo de una defensa sobre ese tema y espera
 - ¿Por qué la feature histórica usa solo períodos anteriores?
 - ¿Cómo saben que el modelo no está sobreajustando?
 - ¿Qué reglas del dataset sintético descubrió el modelo?
+- ¿Por qué escalaron las features para KNN y no para el árbol?
+- ¿Por qué eligieron los hiperparámetros con cross-validation y no con el test?
+- ¿Por qué GroupKFold por período y no un KFold común?
+- ¿Cómo predice un árbol de regresión (qué devuelve una hoja, qué minimiza cada corte)?
