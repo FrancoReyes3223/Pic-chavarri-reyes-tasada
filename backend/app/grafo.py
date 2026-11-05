@@ -1,0 +1,80 @@
+"""
+Construcción del grafo de conflictos a partir de las predicciones del modelo.
+
+    Nodo:   materia que se rinde en el período.
+    Arista: par de materias con estudiantes afectados predichos >= umbral_afectados.
+    Peso:   cantidad de estudiantes afectados que predice el modelo.
+
+Predecir se hace una sola vez; construir el grafo, cada vez que cambia el umbral.
+"""
+
+from pathlib import Path
+
+import joblib
+import networkx as nx
+import pandas as pd
+
+CARPETA_BACKEND = Path(__file__).resolve().parent.parent
+RUTA_MODELO = CARPETA_BACKEND / 'app' / 'modelo.pkl'
+RUTA_MATERIAS = CARPETA_BACKEND / 'data' / 'materias.csv'
+RUTA_PARES = CARPETA_BACKEND / 'data' / 'pares_proximo_periodo.csv'
+
+
+def cargar_materias():
+    """Devuelve el catálogo de materias (materia_id, nombre, carrera, anio)."""
+    return pd.read_csv(RUTA_MATERIAS)
+
+
+def predecir_afectados_por_par():
+    """Predice cuántos estudiantes se verían afectados en cada par de materias del próximo período."""
+    archivo_modelo = joblib.load(RUTA_MODELO)
+    modelo = archivo_modelo['modelo']
+    nombres_features = archivo_modelo['features']
+    pares_proximo = pd.read_csv(RUTA_PARES)
+
+    # El modelo necesita las columnas en el mismo orden con el que se entrenó.
+    afectados_por_par = pares_proximo[['materia_id_1', 'materia_id_2']].copy()
+    afectados_por_par['afectados_predichos'] = modelo.predict(pares_proximo[nombres_features])
+    return afectados_por_par
+
+
+def construir_grafo(materias, afectados_por_par, umbral_afectados):
+    """Une con una arista los pares de materias cuyos afectados predichos alcanzan el umbral."""
+    if umbral_afectados <= 0:
+        # Con umbral 0, un par con 0 afectados predichos también sería un conflicto.
+        raise ValueError('El umbral de afectados tiene que ser mayor a 0')
+
+    grafo_conflictos = nx.Graph()
+
+    # Agregamos todas las materias, también las que no tengan ningún conflicto:
+    # esas quedan como nodos aislados y igual necesitan un turno.
+    for materia in materias.itertuples():
+        grafo_conflictos.add_node(
+            materia.materia_id,
+            nombre=materia.nombre,
+            carrera=materia.carrera,
+            anio=materia.anio,
+        )
+
+    pares_en_conflicto = afectados_por_par[afectados_por_par['afectados_predichos'] >= umbral_afectados]
+    for par_materias in pares_en_conflicto.itertuples():
+        grafo_conflictos.add_edge(
+            par_materias.materia_id_1,
+            par_materias.materia_id_2,
+            weight=float(par_materias.afectados_predichos),
+        )
+
+    return grafo_conflictos
+
+
+if __name__ == '__main__':
+    # Prueba manual: cómo cambia el grafo según el umbral.
+    materias = cargar_materias()
+    afectados_por_par = predecir_afectados_por_par()
+
+    print(f'{"Umbral":>8} {"Nodos":>7} {"Aristas":>8} {"Aisladas":>9}')
+    for umbral_afectados in [0.5, 1, 2, 3, 5, 8, 10, 15]:
+        grafo_conflictos = construir_grafo(materias, afectados_por_par, umbral_afectados)
+        materias_aisladas = nx.number_of_isolates(grafo_conflictos)
+        print(f'{umbral_afectados:>8} {grafo_conflictos.number_of_nodes():>7} '
+              f'{grafo_conflictos.number_of_edges():>8} {materias_aisladas:>9}')
