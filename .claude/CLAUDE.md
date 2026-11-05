@@ -46,7 +46,8 @@ backend/
   app/modelo.pkl                  modelo ganador (lo genera entrenamiento.py)
   app/histograma_target.png       gráfico para el informe
   app/overfitting_arbol.png       gráfico para el informe
-  app/                            (pendiente) grafo.py, coloreo.py, main.py (FastAPI)
+  app/main.py                     API FastAPI (/metricas, /cronograma) con CORS y mock
+  app/                            (pendiente) grafo.py, coloreo.py
 frontend/                         (pendiente) React + TypeScript (Vite)
 prompts_ia.md                     registro de prompts para la sección "Uso de IA" del informe
 ```
@@ -59,9 +60,10 @@ Los scripts usan rutas relativas (`data/...`, `app/...`), así que **hay que cor
 - [x] Entrenamiento y selección de modelo
 - [ ] `app/grafo.py`: predecir sobre `pares_proximo_periodo.csv` y armar el grafo con networkx (arista si la predicción ≥ umbral, `weight` = predicción)
 - [ ] `app/coloreo.py`: greedy implementado a mano, ordenando las materias por grado ponderado; validar contra `nx.greedy_color`
-- [ ] `app/main.py`: API FastAPI (`/metricas`, `/cronograma?umbral=`)
+- [x] `app/main.py`: API FastAPI (`/metricas`, `/cronograma?umbral=`) con CORS y modo mock desacoplado
 - [ ] `frontend/`: grafo coloreado, grilla de cronograma y slider de umbral
-- [ ] `README.md`, informe, capturas
+- [x] `README.md`: guía de instalación y ejecución completa
+- [ ] Informe y capturas
 
 ## Features y target
 
@@ -73,18 +75,12 @@ Los scripts usan rutas relativas (`data/...`, `app/...`), así que **hay que cor
 
 Entorno virtual en `backend/.venv`:
 
-- **Linux / Git Bash:**
-  ```bash
-  cd backend
-  source .venv/bin/activate
-  python entrenamiento.py
-  ```
-- **Windows:**
-  ```bash
-  cd backend
-  .venv\Scripts\activate
-  python entrenamiento.py
-  ```
+- **Linux / Git Bash:** `source .venv/bin/activate`
+- **Windows:** `.venv\Scripts\activate`
+
+Una vez activo el entorno (parado en `backend/`):
+- **Para correr el entrenamiento:** `python entrenamiento.py`
+- **Para levantar la API (FastAPI):** `uvicorn app.main:app --reload --port 8000` (documentación Swagger interactiva en `http://localhost:8000/docs`)
 
 Si se corre desde Git Bash, usar `PYTHONIOENCODING=utf-8 .venv/Scripts/python ...`, porque la salida tiene acentos.
 

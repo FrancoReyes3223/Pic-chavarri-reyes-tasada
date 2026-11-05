@@ -75,6 +75,40 @@ Resultado: gana KNN con k=15 (MAE CV 0.946; MAE test 1.021, R² 0.886). El árbo
 
 **Por qué fue útil:** el MAE de test que reportamos ahora es una estimación honesta, escalando las features de forma justa para KNN y porque el test no participó en ninguna decisión.
 
+## 6. Creación de la API FastAPI con datos mock y desacople
+
+**Fecha:** 05/11/2026
+**Prompt:**
+> ### 3. OBJETIVO INMEDIATO (FASE DE DESACOPLE PARA INTEGRANTE B)
+> Escribir el archivo `backend/app/main.py` para la API con FastAPI.
+> Dado que el Integrante A todavía está desarrollando `grafo.py` y `coloreo.py`, la API debe:
+> 1. Proveer datos de prueba estructurados y realistas (*mock data*) para que el Integrante C (Frontend) pueda empezar a consumir la API y renderizar el grafo y el cronograma hoy mismo sin bloquearse.
+> 2. Dejar la arquitectura preparada con una bandera o función puente (`MODO_MOCK = True / False`) para que, apenas el Integrante A entregue las funciones reales `construir_grafo(umbral)` y `colorear_cronograma(grafo)`, la integración se haga en 2 líneas de código.
+> 
+> ### 4. REQUERIMIENTOS TÉCNICOS PARA `backend/app/main.py`
+> 1. **Framework:** FastAPI con tipado estricto y modelos Pydantic para las respuestas.
+> 2. **CORS:** Configurar `CORSMiddleware` permitiendo orígenes locales de desarrollo (`http://localhost:5173`, `http://127.0.0.1:5173` de Vite) y comodín `*` para métodos y headers.
+> 3. **Endpoint `GET /`:** Health check simple que devuelva estado del servicio y versión.
+> 4. **Endpoint `GET /metricas`:** Devuelve las métricas de comparación de los 3 modelos evaluados y cuál fue el seleccionado, para que el frontend pueda mostrarlas en una pestaña/tarjeta informativa.
+> 5. **Endpoint `GET /cronograma`:**
+>    - Parámetro Query: `umbral: float = Query(5.0, ge=0.0, description="Umbral mínimo de estudiantes para considerar conflicto")`.
+>    - Respuesta JSON: Contrato acordado para el Frontend con estructura limpia (`umbral`, `total_materias`, `total_turnos`, `total_conflictos`, `turnos`, `grafo` con `nodos` y `aristas`).
+>    - Si `MODO_MOCK` está activo: cargar materias reales desde `backend/data/materias.csv`, simular asignación coherente de turnos y aristas de conflicto coherentes con el umbral.
+>    - Si `MODO_MOCK` está desactivado: importar y llamar a `app.grafo` y `app.coloreo`.
+> 
+> ### 5. CONVENCIONES Y ESTILO
+> - Código, nombres de variables y comentarios en español, sin tildes en identificadores.
+> - Manejo de rutas relativas con `pathlib.Path` para funcionar desde cualquier directorio.
+> - Instrucciones para correrlo con `uvicorn`.
+
+**Resultado:** generó [`backend/app/main.py`](backend/app/main.py) con FastAPI:
+- CORS habilitado para el puerto de desarrollo de Vite (`5173`) y cualquier origen local.
+- Endpoints `GET /` (health check), `GET /metricas` (métricas de comparación de los 3 modelos) y `GET /cronograma` con el contrato JSON acordado.
+- Modo mock realista basado en [`backend/data/materias.csv`](backend/data/materias.csv) y [`backend/data/pares_proximo_periodo.csv`](backend/data/pares_proximo_periodo.csv) que colorea mediante algoritmo voraz para que el frontend ya pueda interactuar con el slider y ver cambios de turnos.
+- Bandera `MODO_MOCK = True` preparada para conectar `grafo.py` y `coloreo.py` en cuanto el integrante A los finalice.
+
+**Por qué fue útil:** permitió al integrante B dejar la API operativa y al integrante C comenzar a trabajar en el frontend sin tener que esperar a que se termine la lógica de grafos.
+
 ---
 
 ## Casos en que la IA se equivocó o propuso algo que no queríamos
