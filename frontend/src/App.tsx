@@ -1,28 +1,72 @@
 import { useEffect, useState } from 'react'
-import { URL_API, obtenerCronograma, obtenerEstado } from './api'
-import type { Cronograma, EstadoApi } from './api'
+import { URL_API, obtenerCronograma, obtenerEstado, obtenerMetricas } from './api'
+import type { Cronograma as DatosCronograma, EstadoApi, Metricas } from './api'
+import ControlUmbral from './componentes/ControlUmbral'
+import Cronograma from './componentes/Cronograma'
+import TablaMetricas from './componentes/TablaMetricas'
 
-// Umbral fijo por ahora. En el paso 2 lo va a controlar el slider.
+// Umbral con el que arranca la página (después lo mueve el slider).
 const UMBRAL_INICIAL = 5
+
+// Milisegundos que esperamos después de mover el slider antes de pedirle el
+// cronograma a la API. Así no mandamos un pedido por cada paso mientras se arrastra.
+const ESPERA_SLIDER = 200
 
 function App() {
   // Lo que devuelve la API. Empiezan en null porque al abrir la página todavía no llegó nada.
   const [estadoApi, setEstadoApi] = useState<EstadoApi | null>(null)
-  const [cronograma, setCronograma] = useState<Cronograma | null>(null)
+  const [metricas, setMetricas] = useState<Metricas | null>(null)
+  const [cronograma, setCronograma] = useState<DatosCronograma | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // useEffect con [] se ejecuta una sola vez, cuando la página se abre.
+  // El umbral elegido en el slider y si estamos esperando un cronograma nuevo.
+  const [umbral, setUmbral] = useState(UMBRAL_INICIAL)
+  const [cargando, setCargando] = useState(true)
+
+  // Estado de la API y métricas: no dependen del umbral, se piden una sola vez.
   useEffect(() => {
-    async function cargarDatos() {
+    async function cargarDatosFijos() {
       try {
         setEstadoApi(await obtenerEstado())
-        setCronograma(await obtenerCronograma(UMBRAL_INICIAL))
+        setMetricas(await obtenerMetricas())
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e))
       }
     }
-    cargarDatos()
+    cargarDatosFijos()
   }, [])
+
+  // Cronograma: se vuelve a pedir cada vez que cambia el umbral.
+  useEffect(() => {
+    // Si el umbral cambia otra vez antes de que llegue la respuesta, React ejecuta
+    // la función del return: cancela la espera y marca la respuesta vieja para
+    // ignorarla. Así siempre se muestra el cronograma del último umbral elegido.
+    let cancelado = false
+    setCargando(true)
+
+    const espera = setTimeout(async () => {
+      try {
+        const datos = await obtenerCronograma(umbral)
+        if (!cancelado) {
+          setCronograma(datos)
+          setError(null)
+        }
+      } catch (e) {
+        if (!cancelado) {
+          setError(e instanceof Error ? e.message : String(e))
+        }
+      } finally {
+        if (!cancelado) {
+          setCargando(false)
+        }
+      }
+    }, ESPERA_SLIDER)
+
+    return () => {
+      cancelado = true
+      clearTimeout(espera)
+    }
+  }, [umbral])
 
   return (
     <main className="pagina">
@@ -44,16 +88,43 @@ function App() {
             <code>uvicorn app.main:app --reload --port 8000</code> y recargá la
             página.
           </p>
+          <p className="ayuda">Detalle: {error}</p>
         </section>
       )}
 
+      <section className="controles">
+        <ControlUmbral umbral={umbral} alCambiar={setUmbral} />
+
+        {/* aria-live hace que un lector de pantalla lea el resumen nuevo al mover el slider. */}
+        {cronograma && (
+          <p className={cargando ? 'resumen actualizando' : 'resumen'} aria-live="polite">
+            Con un umbral de <strong>{cronograma.umbral}</strong>{' '}
+            {cronograma.umbral === 1 ? 'estudiante' : 'estudiantes'}, las{' '}
+            <strong>{cronograma.total_materias}</strong> materias necesitan{' '}
+            <strong>{cronograma.total_turnos} turnos</strong> para separar los{' '}
+            <strong>{cronograma.total_conflictos}</strong> pares en conflicto.
+          </p>
+        )}
+      </section>
+
       {cronograma && (
-        <p className="resumen">
-          Con un umbral de <strong>{cronograma.umbral}</strong> estudiantes, las{' '}
-          <strong>{cronograma.total_materias}</strong> materias necesitan{' '}
-          <strong>{cronograma.total_turnos} turnos</strong> para separar los{' '}
-          <strong>{cronograma.total_conflictos}</strong> pares en conflicto.
-        </p>
+        <section className="seccion">
+          <h2>Cronograma</h2>
+          <p className="texto">
+            Las materias de un mismo turno se pueden rendir el mismo día: ningún par
+            entre ellas supera el umbral.
+          </p>
+          <div className={cargando ? 'actualizando' : ''}>
+            <Cronograma turnos={cronograma.turnos} />
+          </div>
+        </section>
+      )}
+
+      {metricas && (
+        <section className="seccion">
+          <h2>Cómo se eligió el modelo</h2>
+          <TablaMetricas metricas={metricas} />
+        </section>
       )}
     </main>
   )
