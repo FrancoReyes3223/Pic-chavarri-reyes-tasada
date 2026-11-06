@@ -56,7 +56,9 @@ def construir_grafo(materias, afectados_por_par, umbral_afectados):
             anio=materia.anio,
         )
 
-    pares_en_conflicto = afectados_por_par[afectados_por_par['afectados_predichos'] >= umbral_afectados]
+    cumple_umbral = afectados_por_par['afectados_predichos'] >= umbral_afectados
+    pares_en_conflicto = afectados_por_par[cumple_umbral]
+
     for par_materias in pares_en_conflicto.itertuples():
         grafo_conflictos.add_edge(
             par_materias.materia_id_1,
