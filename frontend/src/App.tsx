@@ -3,6 +3,7 @@ import { URL_API, obtenerCronograma, obtenerEstado, obtenerMetricas } from './ap
 import type { Cronograma as DatosCronograma, EstadoApi, Metricas } from './api'
 import ControlUmbral from './componentes/ControlUmbral'
 import Cronograma from './componentes/Cronograma'
+import GrafoConflictos from './componentes/GrafoConflictos'
 import TablaMetricas from './componentes/TablaMetricas'
 
 // Umbral con el que arranca la página (después lo mueve el slider).
@@ -106,6 +107,19 @@ function App() {
           </p>
         )}
       </section>
+
+      {cronograma && (
+        <section className="seccion">
+          <h2>Grafo de conflictos</h2>
+          <p className="texto">
+            Cada punto es una materia, pintada con el color de su turno. Una línea une dos
+            materias en conflicto, y es más gruesa cuantos más estudiantes afectados predice el
+            modelo. Dos materias unidas nunca tienen el mismo color. Pasá el mouse por un punto
+            para ver la materia; con la rueda se hace zoom.
+          </p>
+          <GrafoConflictos nodos={cronograma.grafo.nodos} aristas={cronograma.grafo.aristas} />
+        </section>
+      )}
 
       {cronograma && (
         <section className="seccion">

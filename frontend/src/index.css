@@ -21,6 +21,8 @@
   --turno-7: #6250d6;
   --turno-8: #e34948;
 
+  --arista: rgba(90, 101, 115, 0.35); /* aristas del grafo: tinta suave semitransparente */
+
   --fuente: 'Archivo Variable', system-ui, sans-serif;
 
   color-scheme: light dark;
@@ -50,6 +52,8 @@
     --turno-6: #008300;
     --turno-7: #9085e9;
     --turno-8: #e66767;
+
+    --arista: rgba(154, 165, 177, 0.3);
   }
 }
 
@@ -223,6 +227,24 @@ code {
   font-weight: 800;
   font-stretch: 75%;
   line-height: 1.1;
+}
+
+/* Grafo de conflictos. */
+.grafo {
+  position: relative;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--linea);
+  border-bottom: 1px solid var(--linea);
+  overflow: hidden;
+}
+
+/* Tooltip del grafo (lo crea la librería con esta clase). */
+.grafo .float-tooltip-kap {
+  padding: 0.5rem 0.625rem;
+  border-radius: 4px;
+  font: 0.8125rem/1.4 var(--fuente);
+  color: var(--fondo);
+  background: var(--tinta);
 }
 
 /* Grilla del cronograma: tantas columnas como entren, cada una de al menos 13rem. */
