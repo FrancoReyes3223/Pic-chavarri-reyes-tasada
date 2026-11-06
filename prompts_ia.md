@@ -111,6 +111,26 @@ Resultado: gana KNN con k=15 (MAE CV 0.946; MAE test 1.021, R² 0.886). El árbo
 
 ---
 
+## 9. Proyecto base del frontend y conexión con la API
+
+**Fecha:** 06/11/2026
+**Prompt:**
+> empezamos con el paso 1 asi tenemos el frontend y la conexion con la API
+
+**Resultado:** creó el proyecto [`frontend/`](frontend/) con Vite + React + TypeScript y sacó los archivos de ejemplo de la plantilla:
+- [`frontend/src/api.ts`](frontend/src/api.ts): los tipos del JSON (copiados de los modelos Pydantic de `main.py`) y las funciones que llaman a `/`, `/cronograma` y `/metricas`.
+- [`frontend/src/App.tsx`](frontend/src/App.tsx): una página mínima que muestra si la API responde (y si está en modo mock) y un resumen del cronograma para umbral 5. Si la API no está levantada, explica cómo levantarla.
+- [`frontend/src/index.css`](frontend/src/index.css): paleta neutra con el color reservado para los turnos, tipografía Archivo y modo oscuro.
+- Sección del frontend en el [`README.md`](README.md).
+
+Lo probamos con la API en modo mock y apagándola, en escritorio y en celular.
+
+**Correcciones nuestras:** antes de empezar decidimos usar el formato JSON que devuelve hoy `/cronograma` y no el que figuraba como acordado en `CLAUDE.md`, que no coincidía con la API.
+
+**Por qué fue útil:** confirma que el frontend y el backend se comunican antes de armar el slider, el cronograma y el grafo.
+
+---
+
 ## Casos en que la IA se equivocó o propuso algo que no queríamos
 
 | Situación | Cómo nos dimos cuenta | Qué hicimos |

@@ -80,7 +80,17 @@ uvicorn app.main:app --reload --port 8000
 
 ## 5. Ejecución del Frontend
 
+En otra terminal (la API tiene que estar corriendo), desde la raíz del proyecto:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
 - **Aplicación Web:** `http://localhost:5173`
+
+El frontend busca la API en `http://localhost:8000`. Si corre en otra dirección, se puede cambiar con la variable de entorno `VITE_API_URL` (por ejemplo, creando `frontend/.env` con `VITE_API_URL=http://localhost:9000`).
 
 ---
 
