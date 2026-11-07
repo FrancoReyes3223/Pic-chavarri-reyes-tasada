@@ -178,6 +178,16 @@ Lo probamos con umbral 1 (14 turnos, 623 conflictos), 5 y 30 (3 turnos, casi tod
 
 ---
 
+## 10. Una página por sección en el frontend
+
+**Fecha:** 07/11/2026
+**Prompt:**
+> quiero hacer muchos cambios del frontend. para empezar cada una de las secciones tiene que ser un /xxx nuevo (/cronograma, /grafo (con el umbral de conflicto ahi tambien) /modelo (con la explicacion del modelo), etc)
+
+**Resultado:** separó el frontend en páginas con `react-router-dom`: `/` (inicio con los tres pasos del sistema), `/grafo` (slider de umbral y grafo), `/cronograma` (grilla de turnos), `/modelo` (qué predice, cómo se evaluó y la tabla de métricas) y una página para direcciones que no existen. Agregó una barra de navegación. El umbral se guarda en [`App.tsx`](frontend/src/App.tsx), así el que se elige en `/grafo` es el mismo que usa `/cronograma`. Cada página está en [`frontend/src/paginas/`](frontend/src/paginas/). Lo comprobamos con capturas de cada página en escritorio.
+
+---
+
 ## Casos en que la IA se equivocó o propuso algo que no queríamos
 
 | Situación | Cómo nos dimos cuenta | Qué hicimos |
