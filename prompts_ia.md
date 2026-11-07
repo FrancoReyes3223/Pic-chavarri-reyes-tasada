@@ -134,6 +134,50 @@ Resultado: gana KNN con k=15 (MAE CV 0.946; MAE test 1.021, R² 0.886). El árbo
 
 ---
 
+## 9. Proyecto base del frontend y conexión con la API
+
+**Fecha:** 06/11/2026
+**Prompt:**
+> empezamos con el paso 1 asi tenemos el frontend y la conexion con la API
+
+**Resultado:** creó el proyecto [`frontend/`](frontend/) con Vite + React + TypeScript y sacó los archivos de ejemplo de la plantilla:
+- [`frontend/src/api.ts`](frontend/src/api.ts): los tipos del JSON (copiados de los modelos Pydantic de `main.py`) y las funciones que llaman a `/`, `/cronograma` y `/metricas`.
+- [`frontend/src/App.tsx`](frontend/src/App.tsx): una página mínima que muestra si la API responde (y si está en modo mock) y un resumen del cronograma para umbral 5. Si la API no está levantada, explica cómo levantarla.
+- [`frontend/src/index.css`](frontend/src/index.css): paleta neutra con el color reservado para los turnos, tipografía Archivo y modo oscuro.
+- Sección del frontend en el [`README.md`](README.md).
+
+Lo probamos con la API en modo mock y apagándola, en escritorio y en celular.
+
+**Correcciones nuestras:** antes de empezar decidimos usar el formato JSON que devuelve hoy `/cronograma` y no el que figuraba como acordado en `CLAUDE.md`, que no coincidía con la API.
+
+**Por qué fue útil:** confirma que el frontend y el backend se comunican antes de armar el slider, el cronograma y el grafo.
+
+---
+
+## 10. Grafo de conflictos coloreado por turno
+
+**Fecha:** 06/11/2026
+**Prompt:**
+> Vamos con el paso 3: el grafo de conflictos en el frontend.
+> Cada materia tiene que ser un nodo pintado con el color de su turno (el mismo que usa la grilla del cronograma), y cada arista une dos materias en conflicto. Si se puede, que el grosor de la arista muestre el peso, o sea cuántos estudiantes afectados predice el modelo.
+> El grafo se tiene que actualizar cuando muevo el slider de umbral, y al pasar el mouse por un nodo quiero ver el nombre de la materia y su turno.
+> Antes de programar, mostrame 2 o 3 librerías para dibujarlo con sus ventajas y desventajas, y elegimos juntos. Quiero algo simple
+
+**Resultado:** comparó tres opciones: un SVG dibujado a mano (sin librería), `react-force-graph-2d` y Cytoscape.js. Recomendó el SVG propio por ser el más fácil de explicar; nosotros elegimos `react-force-graph-2d`. Con eso creó [`GrafoConflictos.tsx`](frontend/src/componentes/GrafoConflictos.tsx):
+- Los nodos se ubican con una simulación de fuerzas (las aristas atraen, los nodos se repelen), así las materias con muchos conflictos entre sí quedan cerca.
+- Cada nodo usa el color de su turno, el mismo de la grilla; del turno 9 en adelante, con rayas.
+- El grosor de cada arista es proporcional a los estudiantes afectados que predice el modelo.
+- Al pasar el mouse por un nodo se ve la materia, su turno, carrera, año y cantidad de conflictos.
+- Al mover el slider, las materias arrancan desde la posición anterior para que el grafo no se desarme.
+
+Lo probamos con umbral 1 (14 turnos, 623 conflictos), 5 y 30 (3 turnos, casi todas las materias sueltas), en escritorio, celular y modo oscuro.
+
+**Correcciones nuestras:** elegimos `react-force-graph-2d` en lugar del SVG propio que recomendaba.
+
+**Por qué fue útil:** se ve el grafo coloreado que arma el backend y cómo cambia con el umbral, que es lo central del TP.
+
+---
+
 ## Casos en que la IA se equivocó o propuso algo que no queríamos
 
 | Situación | Cómo nos dimos cuenta | Qué hicimos |
