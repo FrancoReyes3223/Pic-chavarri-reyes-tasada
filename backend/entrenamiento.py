@@ -126,6 +126,50 @@ print(f'max_depth=20 -> MAE train {mae_train_por_prof[-1]:.3f}, MAE validación 
 print('Gráfico guardado en app/overfitting_arbol.png')
 
 
+# --- Análisis de errores del modelo ganador (en test) ---
+# Miramos dónde se equivoca el modelo elegido y qué efecto tiene eso en el grafo.
+
+test = test.copy()
+test['prediccion'] = mejor_modelo.predict(X_test)
+test['error'] = test['prediccion'] - test[TARGET]   # positivo: sobreestima; negativo: subestima
+
+print(f'\n--- Análisis de errores de {mejor_nombre} en test ---')
+print(f'Error promedio (con signo): {test["error"].mean():.3f}  (negativo = tiende a predecir de menos)')
+
+# 1) Error según el tipo de par: ¿falla más en los pares con muchos estudiantes en común?
+print(f'\n{"Mismo año":<10} {"Misma carrera":<14} {"Pares":>6} {"Afectados prom.":>16} {"MAE":>6}')
+for (mismo_anio, misma_carrera), grupo in test.groupby(['mismo_anio', 'misma_carrera']):
+    mae_grupo = mean_absolute_error(grupo[TARGET], grupo['prediccion'])
+    print(f'{"sí" if mismo_anio else "no":<10} {"sí" if misma_carrera else "no":<14} '
+          f'{len(grupo):>6} {grupo[TARGET].mean():>16.1f} {mae_grupo:>6.2f}')
+
+# 2) Gráfico de predicción contra valor real: los puntos sobre la diagonal son aciertos.
+maximo = max(test[TARGET].max(), test['prediccion'].max())
+plt.scatter(test[TARGET], test['prediccion'], s=8, alpha=0.4)
+plt.plot([0, maximo], [0, maximo], color='red', label='Predicción perfecta')
+plt.title(f'{mejor_nombre}: predicción contra valor real (test)')
+plt.xlabel('Estudiantes afectados reales')
+plt.ylabel('Estudiantes afectados predichos')
+plt.legend()
+plt.grid(True)
+plt.savefig('app/prediccion_vs_real.png')
+plt.close()
+print('\nGráfico guardado en app/prediccion_vs_real.png')
+
+# 3) Efecto en el grafo: para cada período de test, comparamos el grafo que arma el
+#    modelo con el que se armaría con los valores reales.
+#    "Sobran": aristas que el modelo pone pero no son conflictos reales (turnos de más).
+#    "Faltan": conflictos reales que el modelo no ve (estudiantes con dos exámenes juntos).
+print(f'\n{"Período":<8} {"Umbral":>6} {"Reales":>7} {"Predichas":>10} {"Sobran":>7} {"Faltan":>7}')
+for periodo, grupo in test.groupby('periodo'):
+    for umbral in [2, 5, 10]:
+        es_real = grupo[TARGET] >= umbral
+        es_predicha = grupo['prediccion'] >= umbral
+        sobran = (es_predicha & ~es_real).sum()
+        faltan = (es_real & ~es_predicha).sum()
+        print(f'{periodo:<8} {umbral:>6} {es_real.sum():>7} {es_predicha.sum():>10} {sobran:>7} {faltan:>7}')
+
+
 # --- Guardar el modelo ganador ---
 # Guardamos el modelo junto con la lista de features, para que el backend
 # le pase las columnas en el mismo orden con el que se entrenó.

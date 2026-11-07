@@ -52,7 +52,7 @@ python data/generar_dataset.py
 ```
 
 ### Entrenar y Evaluar Modelos
-Compara Regresión Lineal, Árbol de Decisión y KNN con validación cruzada temporal (`GroupKFold`), grafica sobreajuste y guarda el modelo ganador en `app/modelo.pkl`:
+Compara Regresión Lineal, Árbol de Decisión y KNN con validación cruzada temporal (`GroupKFold`), grafica sobreajuste, analiza los errores del modelo ganador (por tipo de par y su efecto en el grafo) y lo guarda en `app/modelo.pkl`:
 ```bash
 python entrenamiento.py
 ```

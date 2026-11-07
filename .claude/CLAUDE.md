@@ -35,6 +35,8 @@ pares de materias → **modelo de regresión** predice estudiantes afectados →
 
 Árbol con `max_depth=20`: MAE train 0.076 contra MAE validación 1.225, un overfitting claro. El gráfico está en `app/overfitting_arbol.png`.
 
+Análisis de errores de KNN en test: error promedio -0.10 (predice un poco de menos). El MAE crece con los estudiantes en común: 0.43 en pares de distinto año y carrera, 4.63 en pares del mismo año y carrera. Con umbral 5, al modelo le faltan más conflictos reales de los que le sobran (período 8: 23 contra 19; con umbral 2: 91 contra 23). KNN no predice más de unos 46 afectados, porque promedia vecinos. Gráfico en `app/prediccion_vs_real.png`.
+
 `app/modelo.pkl` es un dict `{'modelo', 'nombre', 'features'}`. `modelo` es un **Pipeline** (scaler + KNN): se usa directo con `modelo.predict(df[features])`, que escala solo. Las columnas tienen que ir en el orden de `features`.
 
 ## Estructura
@@ -45,11 +47,12 @@ backend/
   data/materias.csv               45 materias (3 carreras × 5 años × 3 materias) = nodos
   data/pares_historico.csv        990 pares × 8 períodos = 7920 filas (entrenamiento)
   data/pares_proximo_periodo.csv  features del período a planificar, sin target
-  entrenamiento.py                EDA, CV, evaluación en test, gráfico de overfitting y guardado del modelo
+  entrenamiento.py                EDA, CV, evaluación en test, gráfico de overfitting, análisis de errores y guardado del modelo
   requirements.txt                numpy, pandas, scikit-learn, networkx, fastapi, uvicorn, matplotlib
   app/modelo.pkl                  modelo ganador (lo genera entrenamiento.py)
   app/histograma_target.png       gráfico para el informe
   app/overfitting_arbol.png       gráfico para el informe
+  app/prediccion_vs_real.png      gráfico para el informe (análisis de errores)
   app/main.py                     API FastAPI (/, /metricas, /cronograma) con CORS; usa grafo.py y coloreo.py (el modo mock se sacó)
   app/grafo.py                    predice el próximo período y arma el grafo según el umbral
   app/coloreo.py                  coloreo greedy (`colorear_grafo`) y su verificación
