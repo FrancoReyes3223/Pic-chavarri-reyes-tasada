@@ -178,19 +178,7 @@ Lo probamos con umbral 1 (14 turnos, 623 conflictos), 5 y 30 (3 turnos, casi tod
 
 ---
 
-## 12. Greedy que reparte las materias entre los turnos
 
-**Fecha:** 07/11/2026
-**Prompts:**
-> No hagas los cambios solo decime que pensas de las propuestas:
->
-> - el algoritmo greedy ya no elegiria "el menor turno que no tengan sus vecinos" si no "el turno con menor cantidad de materias que no tengan sus vecinos"
-
-> Empeza con el cambio en el greedy, no hagas todavia las abstracciones
-
-**Resultado:** antes de cambiar nada, la IA simuló nuestra regla contra la anterior. Con umbral 5, la regla anterior dejaba un turno con 12 materias y otro con 1; la nueva da 9 turnos de 5 materias. La cantidad de turnos a veces cambia: con umbral 0.5 usa 12 en vez de 11 y con umbral 1 usa 10 en vez de 11. También propuso como alternativa rebalancear después del greedy (nunca agrega turnos), pero elegimos nuestra regla por ser más simple de explicar. Después cambió [`colorear_grafo`](backend/app/coloreo.py): cada materia va, de los turnos que no usa ninguna vecina, al que tiene menos materias, y si no hay ninguno libre se abre uno nuevo. Lo probamos con umbrales de 0.5 a 15 y en la API: el coloreo es siempre válido.
-
----
 
 ## Casos en que la IA se equivocó o propuso algo que no queríamos
 
@@ -199,4 +187,4 @@ Lo probamos con umbral 1 (14 turnos, 623 conflictos), 5 y 30 (3 turnos, casi tod
 | Agregó la variable de clasificación `hubo_conflicto` aunque íbamos a usar regresión | Revisando el código generado | Le pedimos que la eliminara |
 | Metió el entrenamiento de modelos dentro del generador de datos (`--verificar`) | Nos dio resultados para determinar el under/overfitting aunque unicamnente habiamos generado la database | Lo sacamos y lo dejamos para cuando implementemos y entrenemos los modelos reales |
 | Asumió el uso de Jupyter Notebook (.ipynb) agregando dependencias innecesarias | Cuestionando la necesidad técnica del notebook | Reemplazamos el plan por el script `entrenamiento.py` directo |
-| Usó comprensiones, una sintaxis que no vimos en clase | Revisando `colorear_grafo`: un `for` y un `if` dentro de las llaves no parecían hacer nada | Le pedimos reemplazarlas por bucles comunes en todo el backend |
+

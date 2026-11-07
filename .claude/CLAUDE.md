@@ -50,7 +50,7 @@ backend/
   app/modelo.pkl                  modelo ganador (lo genera entrenamiento.py)
   app/histograma_target.png       gráfico para el informe
   app/overfitting_arbol.png       gráfico para el informe
-  app/main.py                     API FastAPI (/, /metricas, /cronograma) con CORS; MODO_MOCK=False usa el modelo real
+  app/main.py                     API FastAPI (/, /metricas, /cronograma) con CORS; usa grafo.py y coloreo.py (el modo mock se sacó)
   app/grafo.py                    predice el próximo período y arma el grafo según el umbral
   app/coloreo.py                  coloreo greedy (`colorear_grafo`) y su verificación
 frontend/                         React + TypeScript (Vite)
@@ -70,7 +70,7 @@ Los scripts usan rutas relativas (`data/...`, `app/...`), así que **hay que cor
 - [x] Entrenamiento y selección de modelo
 - [x] `app/grafo.py`: predecir sobre `pares_proximo_periodo.csv` y armar el grafo con networkx (arista si la predicción ≥ umbral, `weight` = predicción)
 - [x] `app/coloreo.py`: greedy implementado a mano, ordenando las materias por grado ponderado; validar contra `nx.greedy_color`
-- [x] `app/main.py`: API FastAPI (`/metricas`, `/cronograma?umbral=`) con CORS y modo mock desacoplado
+- [x] `app/main.py`: API FastAPI (`/metricas`, `/cronograma?umbral=`) con CORS
 - [x] `frontend/`: grafo coloreado, grilla de cronograma y slider de umbral
 - [x] `README.md`: guía de instalación y ejecución completa
 - [ ] Probar el README desde cero (clonar en otra carpeta y seguir los pasos)
@@ -104,7 +104,7 @@ Los scripts usan rutas relativas (`data/...`, `app/...`), así que **hay que cor
 
 Los tipos de `frontend/src/api.ts` son copia de estos modelos: si cambia uno, hay que cambiar el otro.
 
-`coloreo.py` expone `colorear_grafo(grafo_conflictos)` y devuelve un diccionario `{materia_id: turno}` con turnos desde 0. `main.py` arma la respuesta a partir de él y del grafo, y muestra los turnos desde 1. `MODO_MOCK` está en `False`.
+`coloreo.py` expone `colorear_grafo(grafo_conflictos)` y devuelve un diccionario `{materia_id: turno}` con turnos desde 0. `main.py` arma la respuesta a partir de él y del grafo, y muestra los turnos desde 1. El modo mock se sacó de `main.py`; `GET /` sigue devolviendo `modo_mock: false` porque el frontend lo muestra.
 
 ## Features y target
 

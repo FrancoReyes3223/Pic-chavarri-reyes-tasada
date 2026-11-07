@@ -25,17 +25,48 @@ def cargar_materias():
     return pd.read_csv(RUTA_MATERIAS)
 
 
+def cargar_modelo():
+    """Devuelve el modelo entrenado y la lista de features en el orden con el que se entrenó."""
+    archivo_modelo = joblib.load(RUTA_MODELO)
+    return archivo_modelo['modelo'], archivo_modelo['features']
+
+
 def predecir_afectados_por_par():
     """Predice cuántos estudiantes se verían afectados en cada par de materias del próximo período."""
-    archivo_modelo = joblib.load(RUTA_MODELO)
-    modelo = archivo_modelo['modelo']
-    nombres_features = archivo_modelo['features']
+    modelo, nombres_features = cargar_modelo()
     pares_proximo = pd.read_csv(RUTA_PARES)
 
     # El modelo necesita las columnas en el mismo orden con el que se entrenó.
     afectados_por_par = pares_proximo[['materia_id_1', 'materia_id_2']].copy()
     afectados_por_par['afectados_predichos'] = modelo.predict(pares_proximo[nombres_features])
     return afectados_por_par
+
+
+def agregar_materias(grafo_conflictos, materias):
+    """Agrega cada materia como un nodo, con su nombre, carrera y año."""
+    for materia in materias.itertuples():
+        grafo_conflictos.add_node(
+            materia.materia_id,
+            nombre=materia.nombre,
+            carrera=materia.carrera,
+            anio=materia.anio,
+        )
+
+
+def filtrar_pares_en_conflicto(afectados_por_par, umbral_afectados):
+    """Devuelve solo los pares cuyos afectados predichos alcanzan el umbral."""
+    cumple_umbral = afectados_por_par['afectados_predichos'] >= umbral_afectados
+    return afectados_por_par[cumple_umbral]
+
+
+def agregar_conflictos(grafo_conflictos, pares_en_conflicto):
+    """Agrega una arista por cada par en conflicto; el peso es la cantidad de afectados predichos."""
+    for par_materias in pares_en_conflicto.itertuples():
+        grafo_conflictos.add_edge(
+            par_materias.materia_id_1,
+            par_materias.materia_id_2,
+            weight=float(par_materias.afectados_predichos),
+        )
 
 
 def construir_grafo(materias, afectados_por_par, umbral_afectados):
@@ -46,25 +77,12 @@ def construir_grafo(materias, afectados_por_par, umbral_afectados):
 
     grafo_conflictos = nx.Graph()
 
-    # Agregamos todas las materias, también las que no tengan ningún conflicto:
+    # Primero todas las materias, también las que no tengan ningún conflicto:
     # esas quedan como nodos aislados y igual necesitan un turno.
-    for materia in materias.itertuples():
-        grafo_conflictos.add_node(
-            materia.materia_id,
-            nombre=materia.nombre,
-            carrera=materia.carrera,
-            anio=materia.anio,
-        )
+    agregar_materias(grafo_conflictos, materias)
 
-    cumple_umbral = afectados_por_par['afectados_predichos'] >= umbral_afectados
-    pares_en_conflicto = afectados_por_par[cumple_umbral]
-
-    for par_materias in pares_en_conflicto.itertuples():
-        grafo_conflictos.add_edge(
-            par_materias.materia_id_1,
-            par_materias.materia_id_2,
-            weight=float(par_materias.afectados_predichos),
-        )
+    pares_en_conflicto = filtrar_pares_en_conflicto(afectados_por_par, umbral_afectados)
+    agregar_conflictos(grafo_conflictos, pares_en_conflicto)
 
     return grafo_conflictos
 
