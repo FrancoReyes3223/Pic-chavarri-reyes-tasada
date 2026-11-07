@@ -47,7 +47,8 @@ backend/
   app/histograma_target.png       gráfico para el informe
   app/overfitting_arbol.png       gráfico para el informe
   app/main.py                     API FastAPI (/metricas, /cronograma) con CORS y mock
-  app/                            (pendiente) grafo.py, coloreo.py
+  app/grafo.py                    predice el próximo período y arma el grafo según el umbral
+  app/coloreo.py                  coloreo greedy (`colorear_grafo`) y su verificación
 frontend/                         (pendiente) React + TypeScript (Vite)
 prompts_ia.md                     registro de prompts para la sección "Uso de IA" del informe
 ```
@@ -58,12 +59,37 @@ Los scripts usan rutas relativas (`data/...`, `app/...`), así que **hay que cor
 
 - [x] Dataset sintético
 - [x] Entrenamiento y selección de modelo
-- [ ] `app/grafo.py`: predecir sobre `pares_proximo_periodo.csv` y armar el grafo con networkx (arista si la predicción ≥ umbral, `weight` = predicción)
-- [ ] `app/coloreo.py`: greedy implementado a mano, ordenando las materias por grado ponderado; validar contra `nx.greedy_color`
+- [x] `app/grafo.py`: predecir sobre `pares_proximo_periodo.csv` y armar el grafo con networkx (arista si la predicción ≥ umbral, `weight` = predicción)
+- [x] `app/coloreo.py`: greedy implementado a mano, ordenando las materias por grado ponderado; validar contra `nx.greedy_color`
 - [x] `app/main.py`: API FastAPI (`/metricas`, `/cronograma?umbral=`) con CORS y modo mock desacoplado
 - [ ] `frontend/`: grafo coloreado, grilla de cronograma y slider de umbral
 - [x] `README.md`: guía de instalación y ejecución completa
 - [ ] Informe y capturas
+
+## Formato de la API (acordado por el grupo)
+
+`GET /cronograma?umbral=5` responde con estos campos y nombres. Si hay que cambiarlos, avisar al grupo: backend y frontend dependen de ellos.
+
+```json
+{
+  "umbral": 5,
+  "cant_turnos": 9,
+  "nodos": [
+    {"id": "M01", "nombre": "Análisis Matemático I", "carrera": "Sistemas", "anio": 1, "turno": 0}
+  ],
+  "aristas": [
+    {"source": "M01", "target": "M02", "peso": 23.4}
+  ],
+  "cronograma": {
+    "0": ["M01", "M07"],
+    "1": ["M02"]
+  }
+}
+```
+
+`coloreo.py` tiene que exponer `colorear_grafo(grafo_conflictos)` y devolver un diccionario `{materia_id: turno}` con turnos desde 0. `main.py` arma la respuesta a partir de él y del grafo, y muestra los turnos desde 1. `MODO_MOCK` ya está en `False`.
+
+**Pendiente de resolver:** la respuesta actual de `main.py` no usa exactamente estos nombres (ver `CronogramaResponse`: `total_turnos`, `turnos`, `grafo.nodos`, `origen`/`destino`, `label`).
 
 ## Features y target
 
@@ -88,5 +114,6 @@ Si se corre desde Git Bash, usar `PYTHONIOENCODING=utf-8 .venv/Scripts/python ..
 
 - Código, variables y comentarios en **español**, sin tildes en los identificadores.
 - Código simple y explicable: en la defensa oral nos pueden preguntar cualquier línea.
+- **No usar comprensiones** de listas, conjuntos o diccionarios ni expresiones generadoras (`all(x for ...)`, `max(x for ...)`): no las vimos en clase. Usar bucles `for` comunes.
 - **No hacer commits** salvo que se pida. El repo tiene que mostrar commits incrementales de los tres integrantes.
 - Después de cada pedido relevante, registrar el prompt con la skill `registrar-prompt`. **Siempre que se toque `prompts_ia.md`, avisarlo con el bloque grande "⚠️ SE ACTUALIZÓ prompts_ia.md"** definido en esa skill, para que el grupo lo revise.

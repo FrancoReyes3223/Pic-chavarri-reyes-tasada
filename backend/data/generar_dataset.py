@@ -122,7 +122,10 @@ def crear_materias(rng):
             for nombre in nombres:
                 filas.append({"nombre": nombre, "carrera": carrera, "anio": anio})
     materias = pd.DataFrame(filas)
-    materias.insert(0, "materia_id", [f"M{i + 1:02d}" for i in range(len(materias))])
+    ids_materias = []
+    for i in range(len(materias)):
+        ids_materias.append(f"M{i + 1:02d}")
+    materias.insert(0, "materia_id", ids_materias)
     materias["tamanio"] = rng.uniform(*TAMANIO_MATERIA, size=len(materias))
     return materias
 
