@@ -647,7 +647,7 @@ code {
 
   /* En pantallas chicas la leyenda baja debajo del grafo. */
   .grafo-con-leyenda {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0;
   }
 }

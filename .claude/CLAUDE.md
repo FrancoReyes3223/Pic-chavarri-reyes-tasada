@@ -21,9 +21,12 @@ pares de materias → **modelo de regresión** predice estudiantes afectados →
 - Usamos **scripts `.py`, no notebooks de Jupyter**.
 - **El test no se usa para elegir nada.** Los hiperparámetros y el modelo ganador se eligen con `GridSearchCV` sobre train, con `GroupKFold` por período (cada fold deja afuera un período entero). El test (períodos 7 y 8) se mira una sola vez, al final.
 - **KNN va con `StandardScaler`** dentro de un pipeline, porque usa distancias. La regresión lineal y el árbol van sin escalar.
-- El grafo del frontend se dibuja con **`react-force-graph-2d`** (simulación de fuerzas, con zoom y tooltip).
-- Los **colores de los turnos** se definen una sola vez en `frontend/src/index.css` (`--turno-1` a `--turno-8`, con versión para modo oscuro) y los comparten el grafo y la grilla. Del turno 9 en adelante se repite el color con rayas.
-- El **slider de umbral** va de 1 a 30, en enteros: la API rechaza el 0.
+- El frontend tiene **una página por sección** con `react-router-dom` (necesita Node 20+): `/`, `/grafo`, `/cronograma`, `/modelo`.
+- El grafo se ve de **tres formas**, y nos quedamos con las tres porque cada una muestra algo distinto:
+  - `/grafo`, **por cercanía**: `react-force-graph-2d` (simulación de fuerzas). Arrastrar solo mueve nodos (sin desplazar el gráfico), el nodo queda fijo al soltarlo, el zoom automático se hace solo con datos nuevos y "Reacomodar" suelta todo.
+  - `/grafo/grilla`, **por carrera y año**, y `/grafo/turnos`, **por turno**: SVG propio (`GrafoSvg.tsx`) con posiciones fijas y resaltado de conflictos al pasar el mouse.
+- Los **colores de los turnos** se definen una sola vez en `frontend/src/index.css` (`--turno-1` a `--turno-8`, con versión para modo oscuro) y los comparten los grafos, la leyenda y la grilla. Del turno 9 en adelante se repite el color con rayas.
+- El **slider de umbral** va de 1 a 30, en enteros: la API rechaza el 0. Está en `/grafo` y en `/cronograma`, y los dos usan el mismo valor (el estado vive en `App.tsx`).
 
 ## Resultados actuales del modelo (seed 42)
 
@@ -55,10 +58,12 @@ backend/
   app/coloreo.py                  coloreo greedy (`colorear_grafo`) y su verificación
 frontend/                         React + TypeScript (Vite)
   src/api.ts                      tipos del JSON y llamadas a la API
-  src/App.tsx                     la página: pide los datos y arma las secciones
+  src/App.tsx                     rutas, barra de navegación, umbral compartido y pedidos a la API
   src/colores.ts                  color de cada turno (usa las variables de index.css)
   src/index.css                   estilos y colores (claro y oscuro)
-  src/componentes/                ControlUmbral (slider), GrafoConflictos, Cronograma, TablaMetricas
+  src/paginas/                    Inicio, PaginaGrafo (3 vistas), PaginaCronograma, PaginaModelo, NoEncontrada
+  src/componentes/                ControlUmbral (slider), Resumen, GrafoConflictos (fuerzas), GrafoSvg + GrafoGrilla
+                                  + GrafoPorTurno (vistas fijas), LeyendaTurnos, Cronograma, TablaMetricas
 prompts_ia.md                     registro de prompts para la sección "Uso de IA" del informe
 ```
 

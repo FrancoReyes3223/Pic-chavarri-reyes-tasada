@@ -7,7 +7,7 @@ Sistema inteligente de asignación de turnos de examen sin solapamiento de alumn
 ## 1. Requisitos Previos
 
 - **Python 3.10+**
-- **Node.js 18+** y **npm** (para el frontend)
+- **Node.js 20+** y **npm** (para el frontend; la librería de rutas `react-router-dom` no funciona con Node 18)
 
 ---
 
@@ -96,6 +96,29 @@ npm run dev
 
 El frontend busca la API en `http://localhost:8000`. Si corre en otra dirección, se puede cambiar con la variable de entorno `VITE_API_URL` (por ejemplo, creando `frontend/.env` con `VITE_API_URL=http://localhost:9000`).
 
+Si ya tenían el frontend instalado de antes, vuelvan a correr `npm install` después de bajar los cambios: se agregó la dependencia `react-router-dom`.
+
+### Páginas de la aplicación
+
+| Dirección | Qué muestra |
+|---|---|
+| `/` | Inicio: los tres pasos del sistema (predecir, armar el grafo, colorear) |
+| `/grafo` | Slider de umbral, resumen y grafo de conflictos coloreado por turno, con la leyenda de colores |
+| `/cronograma` | Slider de umbral, resumen y grilla con las materias de cada turno |
+| `/modelo` | Qué predice el modelo, cómo se evaluó y la tabla comparativa de modelos |
+
+El umbral es uno solo para toda la aplicación: el slider de `/grafo` y el de `/cronograma` muestran y cambian el mismo valor (al recargar la página vuelve a 5).
+
+El grafo se puede ver de tres formas, con las pestañas de `/grafo`:
+
+| Dirección | Vista | Qué muestra |
+|---|---|---|
+| `/grafo` | Por cercanía | Grupos de conflictos: las materias se acomodan con una simulación de fuerzas. Se pueden arrastrar nodos y hacer zoom con la rueda |
+| `/grafo/grilla` | Por carrera y año | Por qué hay conflictos: una fila por carrera y una columna por año, con posiciones fijas |
+| `/grafo/turnos` | Por turno | El resultado del coloreo: una columna por turno, y ninguna arista une dos materias de la misma columna |
+
+En las vistas por carrera y año y por turno, al pasar el mouse por una materia se resaltan sus conflictos.
+
 ---
 
 ## 6. Estructura del Repositorio
@@ -115,6 +138,13 @@ El frontend busca la API en `http://localhost:8000`. Si corre en otra dirección
 │   ├── entrenamiento.py                # EDA, entrenamiento y selección de modelo
 │   └── requirements.txt                # Dependencias de Python
 ├── frontend/                           # Aplicación React + Vite + TypeScript
+│   └── src/
+│       ├── App.tsx                     # Rutas, barra de navegación y datos compartidos (umbral)
+│       ├── api.ts                      # Tipos del JSON y llamadas a la API
+│       ├── colores.ts                  # Color de cada turno
+│       ├── index.css                   # Estilos y colores (modo claro y oscuro)
+│       ├── paginas/                    # Una página por dirección: Inicio, Grafo, Cronograma, Modelo
+│       └── componentes/                # Slider, grafos (fuerzas, grilla, por turno), leyenda, cronograma, métricas
 ├── prompts_ia.md                       # Registro de prompts e interacción con IA
 └── README.md                           # Guía de instalación y ejecución
 ```
