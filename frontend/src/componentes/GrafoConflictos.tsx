@@ -19,6 +19,8 @@ interface NodoGrafico {
   conflictos: number // grado del nodo: con cuántas materias choca
   x?: number // posición, la completa la librería
   y?: number
+  vx?: number // velocidad, también la maneja la librería
+  vy?: number
 }
 
 interface EnlaceGrafico {
@@ -29,6 +31,7 @@ interface EnlaceGrafico {
 
 const RADIO_NODO = 6
 const ALTO_GRAFO = 520
+const FUERZA_GRAVEDAD = 0.1 // qué tan fuerte tira la gravedad hacia el centro
 
 // Posición de cada materia en el dibujo anterior. Al mover el slider las materias
 // arrancan desde donde estaban, así el grafo no se desarma por completo.
@@ -49,10 +52,22 @@ function GrafoConflictos({ nodos, aristas }: Props) {
   useEffect(() => {
     const contenedor = contenedorRef.current
     if (!contenedor) return
+    setAncho(contenedor.clientWidth) // primera medición, sin esperar al observador
     const observador = new ResizeObserver(() => setAncho(contenedor.clientWidth))
     observador.observe(contenedor)
     return () => observador.disconnect()
   }, [])
+
+  // Agregamos a la simulación una "gravedad" suave hacia el centro. Sin ella, los
+  // grupos de materias que no chocan con el resto (por ejemplo, los triángulos de
+  // un mismo año y carrera) se alejan por la repulsión y el grafo queda chiquito.
+  // Se agrega cuando el grafo ya está dibujado (por eso depende del ancho).
+  useEffect(() => {
+    const grafo = grafoRef.current
+    if (!grafo) return
+    grafo.d3Force('gravedad', crearGravedad(FUERZA_GRAVEDAD))
+    grafo.d3ReheatSimulation()
+  }, [ancho])
 
   // Pasamos los datos de la API al formato de la librería.
   // useMemo: solo se recalcula cuando llegan nodos o aristas nuevos.
@@ -171,6 +186,24 @@ function GrafoConflictos({ nodos, aristas }: Props) {
       )}
     </div>
   )
+}
+
+// Fuerza de gravedad para la simulación: en cada paso, cada nodo recibe un empujón
+// hacia el centro (0, 0), más grande cuanto más lejos está. "alpha" es la energía
+// de la simulación: va bajando hasta que todo se queda quieto.
+function crearGravedad(fuerza: number) {
+  let nodosDeLaSimulacion: NodoGrafico[] = []
+  function gravedad(alpha: number) {
+    for (const nodo of nodosDeLaSimulacion) {
+      nodo.vx = (nodo.vx ?? 0) - (nodo.x ?? 0) * fuerza * alpha
+      nodo.vy = (nodo.vy ?? 0) - (nodo.y ?? 0) * fuerza * alpha
+    }
+  }
+  // La librería llama a initialize con la lista de nodos cuando arranca la simulación.
+  gravedad.initialize = (nodos: NodoGrafico[]) => {
+    nodosDeLaSimulacion = nodos
+  }
+  return gravedad
 }
 
 // Lee de index.css los colores de los turnos, del fondo y de las aristas.

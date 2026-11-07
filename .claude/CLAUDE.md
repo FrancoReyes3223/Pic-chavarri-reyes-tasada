@@ -20,6 +20,9 @@ pares de materias → **modelo de regresión** predice estudiantes afectados →
 - Usamos **scripts `.py`, no notebooks de Jupyter**.
 - **El test no se usa para elegir nada.** Los hiperparámetros y el modelo ganador se eligen con `GridSearchCV` sobre train, con `GroupKFold` por período (cada fold deja afuera un período entero). El test (períodos 7 y 8) se mira una sola vez, al final.
 - **KNN va con `StandardScaler`** dentro de un pipeline, porque usa distancias. La regresión lineal y el árbol van sin escalar.
+- El grafo del frontend se dibuja con **`react-force-graph-2d`** (simulación de fuerzas, con zoom y tooltip).
+- Los **colores de los turnos** se definen una sola vez en `frontend/src/index.css` (`--turno-1` a `--turno-8`, con versión para modo oscuro) y los comparten el grafo y la grilla. Del turno 9 en adelante se repite el color con rayas.
+- El **slider de umbral** va de 1 a 30, en enteros: la API rechaza el 0.
 
 ## Resultados actuales del modelo (seed 42)
 
@@ -46,10 +49,15 @@ backend/
   app/modelo.pkl                  modelo ganador (lo genera entrenamiento.py)
   app/histograma_target.png       gráfico para el informe
   app/overfitting_arbol.png       gráfico para el informe
-  app/main.py                     API FastAPI (/metricas, /cronograma) con CORS y mock
+  app/main.py                     API FastAPI (/, /metricas, /cronograma) con CORS; MODO_MOCK=False usa el modelo real
   app/grafo.py                    predice el próximo período y arma el grafo según el umbral
   app/coloreo.py                  coloreo greedy (`colorear_grafo`) y su verificación
-frontend/                         (pendiente) React + TypeScript (Vite)
+frontend/                         React + TypeScript (Vite)
+  src/api.ts                      tipos del JSON y llamadas a la API
+  src/App.tsx                     la página: pide los datos y arma las secciones
+  src/colores.ts                  color de cada turno (usa las variables de index.css)
+  src/index.css                   estilos y colores (claro y oscuro)
+  src/componentes/                ControlUmbral (slider), GrafoConflictos, Cronograma, TablaMetricas
 prompts_ia.md                     registro de prompts para la sección "Uso de IA" del informe
 ```
 
@@ -62,34 +70,40 @@ Los scripts usan rutas relativas (`data/...`, `app/...`), así que **hay que cor
 - [x] `app/grafo.py`: predecir sobre `pares_proximo_periodo.csv` y armar el grafo con networkx (arista si la predicción ≥ umbral, `weight` = predicción)
 - [x] `app/coloreo.py`: greedy implementado a mano, ordenando las materias por grado ponderado; validar contra `nx.greedy_color`
 - [x] `app/main.py`: API FastAPI (`/metricas`, `/cronograma?umbral=`) con CORS y modo mock desacoplado
-- [ ] `frontend/`: grafo coloreado, grilla de cronograma y slider de umbral
+- [x] `frontend/`: grafo coloreado, grilla de cronograma y slider de umbral
 - [x] `README.md`: guía de instalación y ejecución completa
+- [ ] Probar el README desde cero (clonar en otra carpeta y seguir los pasos)
 - [ ] Informe y capturas
 
 ## Formato de la API (acordado por el grupo)
 
-`GET /cronograma?umbral=5` responde con estos campos y nombres. Si hay que cambiarlos, avisar al grupo: backend y frontend dependen de ellos.
+`GET /cronograma?umbral=5` responde con estos campos y nombres (son los modelos Pydantic de `main.py`, ver `CronogramaResponse`). El umbral tiene que ser mayor que 0. Si hay que cambiarlos, avisar al grupo: backend y frontend dependen de ellos.
 
 ```json
 {
   "umbral": 5,
-  "cant_turnos": 9,
-  "nodos": [
-    {"id": "M01", "nombre": "Análisis Matemático I", "carrera": "Sistemas", "anio": 1, "turno": 0}
+  "total_materias": 45,
+  "total_turnos": 9,
+  "total_conflictos": 126,
+  "turnos": [
+    {"turno": 1, "materias": [
+      {"id": "M01", "nombre": "Análisis Matemático I", "carrera": "Sistemas", "anio": 1}
+    ]}
   ],
-  "aristas": [
-    {"source": "M01", "target": "M02", "peso": 23.4}
-  ],
-  "cronograma": {
-    "0": ["M01", "M07"],
-    "1": ["M02"]
+  "grafo": {
+    "nodos": [
+      {"id": "M01", "label": "Análisis Matemático I", "carrera": "Sistemas", "anio": 1, "turno": 1}
+    ],
+    "aristas": [
+      {"origen": "M01", "destino": "M02", "peso": 23.4}
+    ]
   }
 }
 ```
 
-`coloreo.py` tiene que exponer `colorear_grafo(grafo_conflictos)` y devolver un diccionario `{materia_id: turno}` con turnos desde 0. `main.py` arma la respuesta a partir de él y del grafo, y muestra los turnos desde 1. `MODO_MOCK` ya está en `False`.
+Los tipos de `frontend/src/api.ts` son copia de estos modelos: si cambia uno, hay que cambiar el otro.
 
-**Pendiente de resolver:** la respuesta actual de `main.py` no usa exactamente estos nombres (ver `CronogramaResponse`: `total_turnos`, `turnos`, `grafo.nodos`, `origen`/`destino`, `label`).
+`coloreo.py` expone `colorear_grafo(grafo_conflictos)` y devuelve un diccionario `{materia_id: turno}` con turnos desde 0. `main.py` arma la respuesta a partir de él y del grafo, y muestra los turnos desde 1. `MODO_MOCK` está en `False`.
 
 ## Features y target
 
@@ -109,6 +123,12 @@ Una vez activo el entorno (parado en `backend/`):
 - **Para levantar la API (FastAPI):** `uvicorn app.main:app --reload --port 8000` (documentación Swagger interactiva en `http://localhost:8000/docs`)
 
 Si se corre desde Git Bash, usar `PYTHONIOENCODING=utf-8 .venv/Scripts/python ...`, porque la salida tiene acentos.
+
+Si PowerShell no deja activar el entorno, se puede levantar la API sin activarlo: `.venv\Scripts\python -m uvicorn app.main:app --reload --port 8000`.
+
+**Frontend** (en otra terminal, con la API corriendo), parado en `frontend/`:
+- La primera vez: `npm install`
+- Para levantarlo: `npm run dev` y abrir `http://localhost:5173`
 
 ## Convenciones
 
