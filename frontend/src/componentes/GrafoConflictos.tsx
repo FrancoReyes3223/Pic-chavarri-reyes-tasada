@@ -21,6 +21,8 @@ interface NodoGrafico {
   y?: number
   vx?: number // velocidad, también la maneja la librería
   vy?: number
+  fx?: number // posición fija: si está definida, la simulación no mueve el nodo
+  fy?: number
 }
 
 interface EnlaceGrafico {
@@ -90,6 +92,8 @@ function GrafoConflictos({ nodos, aristas }: Props) {
         conflictos: conflictosPorMateria.get(nodo.id) ?? 0,
         x: anterior?.x,
         y: anterior?.y,
+        fx: anterior?.fx, // un nodo que el usuario dejó fijo sigue fijo al mover el slider
+        fy: anterior?.fy,
       })
     }
     nodosAnteriores = nodosNuevos
@@ -101,6 +105,39 @@ function GrafoConflictos({ nodos, aristas }: Props) {
 
     return { nodes: Array.from(nodosNuevos.values()), links: enlaces }
   }, [nodos, aristas])
+
+  // Encuadre automático: solo cuando llegan datos nuevos (al abrir la página o al mover
+  // el slider). Si lo hiciéramos cada vez que la simulación se detiene, la cámara
+  // saltaría después de cada arrastre, porque soltar un nodo la vuelve a arrancar.
+  const hayQueEncuadrar = useRef(true)
+  useEffect(() => {
+    hayQueEncuadrar.current = true
+  }, [datos])
+
+  function alDetenerseLaSimulacion() {
+    if (hayQueEncuadrar.current) {
+      grafoRef.current?.zoomToFit(400, 30)
+      hayQueEncuadrar.current = false
+    }
+  }
+
+  // Al soltar un nodo lo dejamos fijo donde quedó. Si no, la librería lo libera
+  // y las fuerzas lo arrastran de vuelta a donde estaba.
+  function alSoltarNodo(nodo: NodoGrafico) {
+    nodo.fx = nodo.x
+    nodo.fy = nodo.y
+  }
+
+  // Botón "Reacomodar": suelta todos los nodos fijos y deja que la simulación
+  // vuelva a ubicarlos, con un encuadre nuevo al terminar.
+  function reacomodar() {
+    for (const nodo of datos.nodes) {
+      nodo.fx = undefined
+      nodo.fy = undefined
+    }
+    hayQueEncuadrar.current = true
+    grafoRef.current?.d3ReheatSimulation()
+  }
 
   // El peso más alto, para que el grosor de cada arista sea relativo a él.
   const pesoMaximo = useMemo(() => {
@@ -145,10 +182,11 @@ function GrafoConflictos({ nodos, aristas }: Props) {
     ctx.stroke()
   }
 
-  // Zona donde el mouse "toca" el nodo (para el tooltip): el mismo círculo.
+  // Zona donde el mouse "toca" el nodo (para el tooltip y para arrastrarlo):
+  // un círculo más grande que el dibujado, así es fácil agarrarlo.
   function dibujarZonaDelMouse(nodo: NodoGrafico, color: string, ctx: CanvasRenderingContext2D) {
     ctx.beginPath()
-    ctx.arc(nodo.x ?? 0, nodo.y ?? 0, RADIO_NODO + 2, 0, 2 * Math.PI)
+    ctx.arc(nodo.x ?? 0, nodo.y ?? 0, RADIO_NODO + 5, 0, 2 * Math.PI)
     ctx.fillStyle = color
     ctx.fill()
   }
@@ -181,9 +219,17 @@ function GrafoConflictos({ nodos, aristas }: Props) {
           linkColor={() => colores.arista}
           linkWidth={grosorDeArista}
           cooldownTicks={120}
-          onEngineStop={() => grafoRef.current?.zoomToFit(400, 30)}
+          onEngineStop={alDetenerseLaSimulacion}
+          onNodeDragEnd={alSoltarNodo}
+          /* Arrastrar solo mueve nodos, nunca el gráfico entero: si las dos cosas se hacen
+             con el mismo gesto, errarle por poco a un nodo mueve todo. El zoom con la
+             rueda sigue andando, y "Reacomodar" vuelve a encuadrar. */
+          enablePanInteraction={false}
         />
       )}
+      <button type="button" className="boton-reacomodar" onClick={reacomodar}>
+        Reacomodar
+      </button>
     </div>
   )
 }

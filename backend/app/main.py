@@ -228,7 +228,7 @@ def obtener_metricas():
         ),
         MetricaModelo(
             modelo="KNN Regressor",
-            hiperparametro="k=15 (con StandardScaler)",
+            hiperparametro="k=15",
             mae_cv=0.946,
             mae_test=1.021,
             r2_test=0.886,
