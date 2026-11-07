@@ -15,6 +15,7 @@ pares de materias → **modelo de regresión** predice estudiantes afectados →
 - Evaluación con **partición temporal**: entrenar con los primeros períodos y testear con los últimos.
 - El **umbral de conflicto** se aplica en el backend al armar el grafo, no en el dataset. Es el slider del frontend.
 - El coloreo greedy **lo implementamos nosotros**. `nx.greedy_color` solo se usa para validar el resultado.
+- Regla del greedy: las materias se recorren por grado ponderado y cada una va, **de los turnos libres, al que tiene menos materias** (empate: el de número más bajo); si no hay ninguno libre, se abre un turno nuevo. Así los turnos quedan parejos (umbral 5: 9 turnos de 5 materias). A veces cambia la cantidad de turnos respecto de "el menor turno libre": umbral 0.5 da 12 en vez de 11 y umbral 1 da 10 en vez de 11.
 - Modelos permitidos por el enunciado: regresión lineal, regresión logística, KNN, SVM y árboles de decisión.
 - El análisis de over/underfitting va en el script de entrenamiento (`backend/entrenamiento.py`), no en el generador.
 - Usamos **scripts `.py`, no notebooks de Jupyter**.
