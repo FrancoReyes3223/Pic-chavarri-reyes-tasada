@@ -17,19 +17,21 @@ Desde la raíz del proyecto:
 
 ```bash
 cd backend
-python3 -m venv .venv
 ```
 
-Activar el entorno virtual:
+Crear y activar el entorno virtual:
 
 - **Linux / macOS:**
   ```bash
+  python3 -m venv .venv
   source .venv/bin/activate
   ```
-- **Windows:**
+- **Windows** (en Windows el comando es `python`, no `python3`):
   ```bash
+  python -m venv .venv
   .venv\Scripts\activate
   ```
+  Si PowerShell no permite ejecutar el script de activación, se puede usar el entorno sin activarlo, anteponiendo `.venv\Scripts\python -m` a cada comando. Por ejemplo: `.venv\Scripts\python -m pip install -r requirements.txt`.
 
 Instalar dependencias:
 
@@ -64,6 +66,8 @@ Con el entorno virtual activo en `backend/`:
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
+
+(Sin activar el entorno, en Windows: `.venv\Scripts\python -m uvicorn app.main:app --reload --port 8000`.)
 
 - **API Base:** `http://localhost:8000`
 - **Documentación Interactiva (Swagger UI):** `http://localhost:8000/docs`

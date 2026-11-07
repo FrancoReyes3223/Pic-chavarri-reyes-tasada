@@ -43,7 +43,7 @@ Sirve como base para la sección "Uso de IA" del informe.
 
 ---
 
-## 4. Configuración de Claude Code para el proyecto
+## 3. Configuración de Claude Code para el proyecto
 
 **Fecha:** 03/11/2026
 **Prompt:**
@@ -57,7 +57,7 @@ Sirve como base para la sección "Uso de IA" del informe.
 
 ---
 
-## 5. Escalado para KNN y selección de modelos con cross-validation
+## 4. Escalado para KNN y selección de modelos con cross-validation
 
 **Fecha:** 04/11/2026
 **Prompt:**
@@ -75,7 +75,7 @@ Resultado: gana KNN con k=15 (MAE CV 0.946; MAE test 1.021, R² 0.886). El árbo
 
 **Por qué fue útil:** el MAE de test que reportamos ahora es una estimación honesta, escalando las features de forma justa para KNN y porque el test no participó en ninguna decisión.
 
-## 6. Creación de la API FastAPI con datos mock y desacople
+## 5. Creación de la API FastAPI con datos mock y desacople
 
 **Fecha:** 05/11/2026
 **Prompt:**
@@ -111,7 +111,7 @@ Resultado: gana KNN con k=15 (MAE CV 0.946; MAE test 1.021, R² 0.886). El árbo
 
 
 
-## 7. Cómo construir un grafo y qué librerías usar
+## 6. Cómo construir un grafo y qué librerías usar
 
 **Fecha:** 05/11/2026
 **Prompt:**
@@ -122,7 +122,7 @@ Resultado: gana KNN con k=15 (MAE CV 0.946; MAE test 1.021, R² 0.886). El árbo
 
 ---
 
-## 8. Reemplazo de comprensiones por bucles comunes
+## 7. Reemplazo de comprensiones por bucles comunes
 
 **Fecha:** 06/11/2026
 **Prompt:**
@@ -134,7 +134,7 @@ Resultado: gana KNN con k=15 (MAE CV 0.946; MAE test 1.021, R² 0.886). El árbo
 
 ---
 
-## 9. Proyecto base del frontend y conexión con la API
+## 8. Proyecto base del frontend y conexión con la API
 
 **Fecha:** 06/11/2026
 **Prompt:**
@@ -154,7 +154,7 @@ Lo probamos con la API en modo mock y apagándola, en escritorio y en celular.
 
 ---
 
-## 10. Grafo de conflictos coloreado por turno
+## 9. Grafo de conflictos coloreado por turno
 
 **Fecha:** 06/11/2026
 **Prompt:**
