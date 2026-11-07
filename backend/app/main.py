@@ -15,23 +15,15 @@ Documentacion interactiva Swagger disponible en:
     http://localhost:8000/docs
 """
 
-import csv
 from functools import lru_cache
-from pathlib import Path
-from typing import List, Dict, Any
-from fastapi import FastAPI, Query, HTTPException
+from typing import Dict, List
+
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-
-# Configuracion y rutas de archivos
-
-# Bandera para alternar entre datos simulados (mock) y logica real de grafos
-MODO_MOCK: bool = False
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-RUTA_MATERIAS = BASE_DIR / "data" / "materias.csv"
-RUTA_PARES_PROXIMO = BASE_DIR / "data" / "pares_proximo_periodo.csv"
+from app.coloreo import colorear_grafo
+from app.grafo import cargar_materias, construir_grafo, predecir_afectados_por_par
 
 
 # Inicializacion de la app y CORS
@@ -62,7 +54,7 @@ class HealthResponse(BaseModel):
     estado: str
     mensaje: str
     version: str
-    modo_mock: bool
+    modo_mock: bool  # siempre False: se mantiene porque el frontend lo muestra
 
 
 class MetricaModelo(BaseModel):
@@ -121,188 +113,93 @@ class CronogramaResponse(BaseModel):
     grafo: GrafoData = Field(..., description="Estructura de nodos y aristas para renderizado")
 
 
-# Armado de la respuesta (lo usan tanto el mock como el flujo real)
-
-def armar_cronograma(
-    umbral: float,
-    materias: List[Dict[str, Any]],
-    aristas: List[Dict[str, Any]],
-    asignacion_turnos: Dict[str, int],
-) -> CronogramaResponse:
-    """Arma la respuesta de /cronograma a partir de las materias, las aristas y el turno de cada materia."""
-    total_turnos = max(asignacion_turnos.values()) if asignacion_turnos else 1
-
-    # Estructurar turnos para el response
-    turnos_dict: Dict[int, List[MateriaDetalle]] = {}
-    for t in range(1, total_turnos + 1):
-        turnos_dict[t] = []
-
-    nodos_grafo: List[NodoGrafo] = []
-
-    for m in materias:
-        nid = m["id"]
-        t = asignacion_turnos[nid]
-        detalle = MateriaDetalle(id=nid, nombre=m["nombre"], carrera=m["carrera"], anio=m["anio"])
-        turnos_dict[t].append(detalle)
-        nodos_grafo.append(NodoGrafo(
-            id=nid,
-            label=m["nombre"],
-            carrera=m["carrera"],
-            anio=m["anio"],
-            turno=t
-        ))
-
-    lista_turnos = []
-    for t in sorted(turnos_dict.keys()):
-        lista_turnos.append(TurnoItem(turno=t, materias=turnos_dict[t]))
-
-    aristas_grafo = []
-    for a in aristas:
-        aristas_grafo.append(AristaGrafo(origen=a["origen"], destino=a["destino"], peso=a["peso"]))
-
-    return CronogramaResponse(
-        umbral=umbral,
-        total_materias=len(materias),
-        total_turnos=total_turnos,
-        total_conflictos=len(aristas_grafo),
-        turnos=lista_turnos,
-        grafo=GrafoData(nodos=nodos_grafo, aristas=aristas_grafo)
-    )
-
-
-# Funciones auxiliares para datos mock
-
-def cargar_materias_csv() -> List[Dict[str, Any]]:
-    """Carga la lista completa de las 45 materias desde el archivo CSV."""
-    if not RUTA_MATERIAS.exists():
-        raise FileNotFoundError(f"No se encontro el archivo de materias en {RUTA_MATERIAS}")
-
-    materias = []
-    with open(RUTA_MATERIAS, mode="r", encoding="utf-8") as f:
-        lector = csv.DictReader(f)
-        for fila in lector:
-            materias.append({
-                "id": fila["materia_id"],
-                "nombre": fila["nombre"],
-                "carrera": fila["carrera"],
-                "anio": int(fila["anio"]),
-            })
-    return materias
-
-
-def generar_cronograma_mock(umbral: float) -> CronogramaResponse:
-    """
-    Genera un cronograma y grafo de prueba basado en materias reales y pares historicos.
-    Aplica una asignacion voraz (greedy) simple para garantizar que dos materias con conflicto
-    no compartan el mismo turno.
-    """
-    materias = cargar_materias_csv()
-
-    aristas = []
-    adyacencias: Dict[str, set] = {}
-    for m in materias:
-        adyacencias[m["id"]] = set()
-
-    # Si existe el archivo de pares del periodo proximo, usamos los historicos como peso representativo
-    if RUTA_PARES_PROXIMO.exists():
-        with open(RUTA_PARES_PROXIMO, mode="r", encoding="utf-8") as f:
-            lector = csv.DictReader(f)
-            for fila in lector:
-                peso = float(fila["cant_estudiantes_compartidos_historico"])
-                if peso >= umbral:
-                    m1 = fila["materia_id_1"]
-                    m2 = fila["materia_id_2"]
-                    aristas.append({
-                        "origen": m1,
-                        "destino": m2,
-                        "peso": round(peso, 1)
-                    })
-                    adyacencias[m1].add(m2)
-                    adyacencias[m2].add(m1)
-    else:
-        # Fallback de seguridad en caso de que no este el CSV de pares
-        for i in range(len(materias)):
-            for j in range(i + 1, len(materias)):
-                m1, m2 = materias[i], materias[j]
-                if m1["carrera"] == m2["carrera"] and m1["anio"] == m2["anio"]:
-                    peso_estimado = 25.0
-                    if peso_estimado >= umbral:
-                        aristas.append({"origen": m1["id"], "destino": m2["id"], "peso": peso_estimado})
-                        adyacencias[m1["id"]].add(m2["id"])
-                        adyacencias[m2["id"]].add(m1["id"])
-
-    # Algoritmo de coloreo Greedy basico para el mock
-    # Ordenamos nodos por grado descendente (heuristica de Welch-Powell)
-    nodos_ordenados = sorted(materias, key=lambda m: len(adyacencias[m["id"]]), reverse=True)
-    asignacion_turnos: Dict[str, int] = {}
-
-    for nodo in nodos_ordenados:
-        nid = nodo["id"]
-        # Buscar turnos usados por los vecinos
-        turnos_vecinos = set()
-        for vecino in adyacencias[nid]:
-            if vecino in asignacion_turnos:
-                turnos_vecinos.add(asignacion_turnos[vecino])
-
-        # Asignar el menor turno disponible (empezando en 1)
-        turno_candidato = 1
-        while turno_candidato in turnos_vecinos:
-            turno_candidato += 1
-        asignacion_turnos[nid] = turno_candidato
-
-    return armar_cronograma(umbral, materias, aristas, asignacion_turnos)
-
-
-# Conexion con los modulos reales de grafos
+# Armado del cronograma: predicciones -> grafo -> coloreo -> respuesta
 
 @lru_cache(maxsize=1)
 def cargar_predicciones():
     """Carga las materias y predice los afectados una sola vez: al mover el slider solo cambia el umbral."""
-    from app.grafo import cargar_materias, predecir_afectados_por_par
-
     return cargar_materias(), predecir_afectados_por_par()
 
 
-def generar_cronograma_real(umbral: float) -> CronogramaResponse:
-    """Arma el cronograma con las predicciones del modelo, grafo.py y coloreo.py."""
-    from app.coloreo import colorear_grafo
-    from app.grafo import construir_grafo
-
-    materias_df, afectados_por_par = cargar_predicciones()
-    grafo_conflictos = construir_grafo(materias_df, afectados_por_par, umbral)
-
-    # colorear_grafo devuelve {materia_id: turno} con turnos desde 0; la API los muestra desde 1.
-    turno_por_materia = colorear_grafo(grafo_conflictos)
-    asignacion_turnos = {}
+def turnos_desde_uno(turno_por_materia: Dict[str, int]) -> Dict[str, int]:
+    """colorear_grafo numera los turnos desde 0; la API los muestra desde 1."""
+    turnos = {}
     for materia_id, turno in turno_por_materia.items():
-        asignacion_turnos[materia_id] = turno + 1
+        turnos[materia_id] = turno + 1
+    return turnos
 
-    materias = []
+
+def armar_turnos(grafo_conflictos, turno_por_materia: Dict[str, int], total_turnos: int) -> List[TurnoItem]:
+    """Agrupa las materias por turno, del turno 1 al último."""
+    materias_por_turno: Dict[int, List[MateriaDetalle]] = {}
+    for turno in range(1, total_turnos + 1):
+        materias_por_turno[turno] = []
+
     for materia_id, datos in grafo_conflictos.nodes(data=True):
-        materias.append({
-            "id": materia_id,
-            "nombre": datos["nombre"],
-            "carrera": datos["carrera"],
-            "anio": int(datos["anio"]),
-        })
+        materias_por_turno[turno_por_materia[materia_id]].append(MateriaDetalle(
+            id=materia_id,
+            nombre=datos["nombre"],
+            carrera=datos["carrera"],
+            anio=int(datos["anio"]),
+        ))
 
+    turnos = []
+    for turno in sorted(materias_por_turno.keys()):
+        turnos.append(TurnoItem(turno=turno, materias=materias_por_turno[turno]))
+    return turnos
+
+
+def armar_nodos(grafo_conflictos, turno_por_materia: Dict[str, int]) -> List[NodoGrafo]:
+    """Un nodo por materia, con el turno que le tocó, para que el frontend lo dibuje."""
+    nodos = []
+    for materia_id, datos in grafo_conflictos.nodes(data=True):
+        nodos.append(NodoGrafo(
+            id=materia_id,
+            label=datos["nombre"],
+            carrera=datos["carrera"],
+            anio=int(datos["anio"]),
+            turno=turno_por_materia[materia_id],
+        ))
+    return nodos
+
+
+def armar_aristas(grafo_conflictos) -> List[AristaGrafo]:
+    """Una arista por par en conflicto, con los afectados predichos redondeados a un decimal."""
     aristas = []
     for origen, destino, datos in grafo_conflictos.edges(data=True):
-        aristas.append({"origen": origen, "destino": destino, "peso": round(datos["weight"], 1)})
+        aristas.append(AristaGrafo(origen=origen, destino=destino, peso=round(datos["weight"], 1)))
+    return aristas
 
-    return armar_cronograma(umbral, materias, aristas, asignacion_turnos)
+
+def generar_cronograma(umbral: float) -> CronogramaResponse:
+    """Arma el grafo con el umbral pedido, lo colorea y devuelve la respuesta de /cronograma."""
+    materias, afectados_por_par = cargar_predicciones()
+    grafo_conflictos = construir_grafo(materias, afectados_por_par, umbral)
+    turno_por_materia = turnos_desde_uno(colorear_grafo(grafo_conflictos))
+
+    total_turnos = max(turno_por_materia.values()) if turno_por_materia else 1
+    aristas = armar_aristas(grafo_conflictos)
+
+    return CronogramaResponse(
+        umbral=umbral,
+        total_materias=grafo_conflictos.number_of_nodes(),
+        total_turnos=total_turnos,
+        total_conflictos=len(aristas),
+        turnos=armar_turnos(grafo_conflictos, turno_por_materia, total_turnos),
+        grafo=GrafoData(nodos=armar_nodos(grafo_conflictos, turno_por_materia), aristas=aristas),
+    )
 
 
 # Endpoints
 
 @app.get("/", response_model=HealthResponse, tags=["Sistema"])
 def health_check():
-    """Verifica que el servicio este operativo y expone el modo actual de ejecucion."""
+    """Verifica que el servicio este operativo."""
     return HealthResponse(
         estado="ok",
         mensaje="API de Planificacion de Examenes operativa",
         version="1.0.0",
-        modo_mock=MODO_MOCK
+        modo_mock=False
     )
 
 
@@ -355,24 +252,11 @@ def obtener_cronograma(
         description="Cantidad minima de estudiantes afectados predichos para generar una arista de conflicto"
     )
 ):
-    """
-    Construye el grafo de conflictos segun el umbral y devuelve la distribucion de turnos de examen.
-    - Si MODO_MOCK=True: utiliza datos simulados pero basados en materias reales y logica greedy.
-    - Si MODO_MOCK=False: conecta con los modulos reales grafo.py y coloreo.py.
-    """
-    if MODO_MOCK:
-        return generar_cronograma_mock(umbral=umbral)
-
-    # Conexion real (para cuando el Integrante A complete coloreo.py)
+    """Construye el grafo de conflictos segun el umbral y devuelve la distribucion de turnos de examen."""
     try:
-        return generar_cronograma_real(umbral)
-    except ImportError as e:
-        raise HTTPException(
-            status_code=501,
-            detail=f"Los modulos reales aun no estan listos ({e}). Cambie MODO_MOCK = True en app/main.py."
-        )
+        return generar_cronograma(umbral)
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error durante el procesamiento del grafo real: {str(e)}"
+            detail=f"Error durante el procesamiento del grafo: {str(e)}"
         )

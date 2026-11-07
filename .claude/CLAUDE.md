@@ -15,6 +15,7 @@ pares de materias → **modelo de regresión** predice estudiantes afectados →
 - Evaluación con **partición temporal**: entrenar con los primeros períodos y testear con los últimos.
 - El **umbral de conflicto** se aplica en el backend al armar el grafo, no en el dataset. Es el slider del frontend.
 - El coloreo greedy **lo implementamos nosotros**. `nx.greedy_color` solo se usa para validar el resultado.
+- Regla del greedy: las materias se recorren por grado ponderado y cada una va, **de los turnos libres, al que tiene menos materias** (empate: el de número más bajo); si no hay ninguno libre, se abre un turno nuevo. Así los turnos quedan parejos (umbral 5: 9 turnos de 5 materias). A veces cambia la cantidad de turnos respecto de "el menor turno libre": umbral 0.5 da 12 en vez de 11 y umbral 1 da 10 en vez de 11.
 - Modelos permitidos por el enunciado: regresión lineal, regresión logística, KNN, SVM y árboles de decisión.
 - El análisis de over/underfitting va en el script de entrenamiento (`backend/entrenamiento.py`), no en el generador.
 - Usamos **scripts `.py`, no notebooks de Jupyter**.
@@ -49,7 +50,7 @@ backend/
   app/modelo.pkl                  modelo ganador (lo genera entrenamiento.py)
   app/histograma_target.png       gráfico para el informe
   app/overfitting_arbol.png       gráfico para el informe
-  app/main.py                     API FastAPI (/, /metricas, /cronograma) con CORS; MODO_MOCK=False usa el modelo real
+  app/main.py                     API FastAPI (/, /metricas, /cronograma) con CORS; usa grafo.py y coloreo.py (el modo mock se sacó)
   app/grafo.py                    predice el próximo período y arma el grafo según el umbral
   app/coloreo.py                  coloreo greedy (`colorear_grafo`) y su verificación
 frontend/                         React + TypeScript (Vite)
@@ -69,7 +70,7 @@ Los scripts usan rutas relativas (`data/...`, `app/...`), así que **hay que cor
 - [x] Entrenamiento y selección de modelo
 - [x] `app/grafo.py`: predecir sobre `pares_proximo_periodo.csv` y armar el grafo con networkx (arista si la predicción ≥ umbral, `weight` = predicción)
 - [x] `app/coloreo.py`: greedy implementado a mano, ordenando las materias por grado ponderado; validar contra `nx.greedy_color`
-- [x] `app/main.py`: API FastAPI (`/metricas`, `/cronograma?umbral=`) con CORS y modo mock desacoplado
+- [x] `app/main.py`: API FastAPI (`/metricas`, `/cronograma?umbral=`) con CORS
 - [x] `frontend/`: grafo coloreado, grilla de cronograma y slider de umbral
 - [x] `README.md`: guía de instalación y ejecución completa
 - [ ] Probar el README desde cero (clonar en otra carpeta y seguir los pasos)
@@ -103,7 +104,7 @@ Los scripts usan rutas relativas (`data/...`, `app/...`), así que **hay que cor
 
 Los tipos de `frontend/src/api.ts` son copia de estos modelos: si cambia uno, hay que cambiar el otro.
 
-`coloreo.py` expone `colorear_grafo(grafo_conflictos)` y devuelve un diccionario `{materia_id: turno}` con turnos desde 0. `main.py` arma la respuesta a partir de él y del grafo, y muestra los turnos desde 1. `MODO_MOCK` está en `False`.
+`coloreo.py` expone `colorear_grafo(grafo_conflictos)` y devuelve un diccionario `{materia_id: turno}` con turnos desde 0. `main.py` arma la respuesta a partir de él y del grafo, y muestra los turnos desde 1. El modo mock se sacó de `main.py`; `GET /` sigue devolviendo `modo_mock: false` porque el frontend lo muestra.
 
 ## Features y target
 
