@@ -188,6 +188,20 @@ Lo probamos con umbral 1 (14 turnos, 623 conflictos), 5 y 30 (3 turnos, casi tod
 
 ---
 
+## 11. Arrastre de nodos y tres formas de ver el grafo
+
+**Fecha:** 07/11/2026
+**Prompts:**
+> el grafo tiene inconsistencias a la hora de intentar mover los nodos, aparte de que es brutalmente anti-estetico. Resolve el primer problema y propone un cambio para el 2do
+
+> hace las 2 en paginas de prueba, despues decido con cual me quedo. Tampoco se termino de solucionar el problema de mover los nodos, como el desplazamiento del grafico y el de los nodos se hace de la misma forma, no es consistente cuando se esta moviendo el grafico o unicamente un nodo.
+
+**Resultado:** en [`GrafoConflictos.tsx`](frontend/src/componentes/GrafoConflictos.tsx), al soltar un nodo ahora queda fijo (antes la librería lo devolvía a su lugar y repetía el zoom automático), arrastrar solo mueve nodos y no el gráfico entero, y hay un botón "Reacomodar". Para el aspecto propuso ubicar las materias en una grilla de carrera × año, y como alternativa una columna por turno. Hicimos las dos con SVG propio ([`GrafoSvg.tsx`](frontend/src/componentes/GrafoSvg.tsx)), con posiciones fijas y resaltado de conflictos al pasar el mouse. Lo probamos arrastrando nodos y moviendo el slider en un navegador real.
+
+**Correcciones nuestras:** el primer arreglo dejaba el nodo fijo, pero seguía usando el mismo gesto para mover un nodo y el gráfico entero; se lo marcamos y lo cambió. Al final decidimos quedarnos con las tres vistas, porque cada una muestra algo distinto: grupos de conflictos (por cercanía), por qué hay conflictos (carrera y año) y el resultado del coloreo (por turno).
+
+---
+
 ## Casos en que la IA se equivocó o propuso algo que no queríamos
 
 | Situación | Cómo nos dimos cuenta | Qué hicimos |
@@ -196,3 +210,4 @@ Lo probamos con umbral 1 (14 turnos, 623 conflictos), 5 y 30 (3 turnos, casi tod
 | Metió el entrenamiento de modelos dentro del generador de datos (`--verificar`) | Nos dio resultados para determinar el under/overfitting aunque unicamnente habiamos generado la database | Lo sacamos y lo dejamos para cuando implementemos y entrenemos los modelos reales |
 | Asumió el uso de Jupyter Notebook (.ipynb) agregando dependencias innecesarias | Cuestionando la necesidad técnica del notebook | Reemplazamos el plan por el script `entrenamiento.py` directo |
 | Usó comprensiones, una sintaxis que no vimos en clase | Revisando `colorear_grafo`: un `for` y un `if` dentro de las llaves no parecían hacer nada | Le pedimos reemplazarlas por bucles comunes en todo el backend |
+| Arregló que el nodo arrastrado volviera a su lugar, pero dejó el mismo gesto para mover un nodo y para mover todo el gráfico | Probando el grafo: errarle por poco a un nodo movía todo | Le pedimos que lo resolviera; ahora arrastrar solo mueve nodos |

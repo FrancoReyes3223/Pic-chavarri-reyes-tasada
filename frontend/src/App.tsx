@@ -8,7 +8,7 @@ import PaginaCronograma from './paginas/PaginaCronograma'
 import PaginaGrafo from './paginas/PaginaGrafo'
 import PaginaModelo from './paginas/PaginaModelo'
 
-// Umbral con el que arranca la página (después lo mueve el slider de /grafo).
+// Umbral con el que arranca la página (después lo mueven los sliders de /grafo y /cronograma).
 const UMBRAL_INICIAL = 5
 
 // Milisegundos que esperamos después de mover el slider antes de pedirle el
@@ -17,7 +17,7 @@ const ESPERA_SLIDER = 200
 
 // App guarda los datos que comparten las páginas (el umbral y lo que devuelve la API)
 // y elige qué página mostrar según la dirección. Como el umbral vive acá y no en
-// una página, el que se elige en /grafo es el mismo que usa /cronograma.
+// una página, el slider de /grafo y el de /cronograma muestran y cambian el mismo valor.
 function App() {
   // Lo que devuelve la API. Empiezan en null porque al abrir la página todavía no llegó nada.
   const [estadoApi, setEstadoApi] = useState<EstadoApi | null>(null)
@@ -109,10 +109,36 @@ function App() {
         {/* Cada Route asocia una dirección con una página. path="*" atrapa cualquier otra. */}
         <Routes>
           <Route path="/" element={<Inicio />} />
+          {/* Las tres direcciones del grafo usan la misma página; solo cambia cómo se dibuja. */}
           <Route
             path="/grafo"
             element={
               <PaginaGrafo
+                vista="fuerzas"
+                cronograma={cronograma}
+                umbral={umbral}
+                alCambiarUmbral={setUmbral}
+                cargando={cargando}
+              />
+            }
+          />
+          <Route
+            path="/grafo/grilla"
+            element={
+              <PaginaGrafo
+                vista="grilla"
+                cronograma={cronograma}
+                umbral={umbral}
+                alCambiarUmbral={setUmbral}
+                cargando={cargando}
+              />
+            }
+          />
+          <Route
+            path="/grafo/turnos"
+            element={
+              <PaginaGrafo
+                vista="turnos"
                 cronograma={cronograma}
                 umbral={umbral}
                 alCambiarUmbral={setUmbral}
@@ -122,7 +148,14 @@ function App() {
           />
           <Route
             path="/cronograma"
-            element={<PaginaCronograma cronograma={cronograma} cargando={cargando} />}
+            element={
+              <PaginaCronograma
+                cronograma={cronograma}
+                umbral={umbral}
+                alCambiarUmbral={setUmbral}
+                cargando={cargando}
+              />
+            }
           />
           <Route path="/modelo" element={<PaginaModelo metricas={metricas} />} />
           <Route path="*" element={<NoEncontrada />} />
