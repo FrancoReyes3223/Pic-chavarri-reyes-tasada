@@ -67,6 +67,7 @@ frontend/                         React + TypeScript (Vite)
   src/paginas/                    Inicio, PaginaGrafo (3 vistas), PaginaCronograma, PaginaModelo, NoEncontrada
   src/componentes/                ControlUmbral (slider), Resumen, GrafoConflictos (fuerzas), GrafoSvg + GrafoGrilla
                                   + GrafoPorTurno (vistas fijas), LeyendaTurnos, Cronograma, TablaMetricas
+proyecto.py                       atajos multiplataforma: `instalar`, `entrenar` y `levantar` (se corre desde la raíz)
 prompts_ia.md                     registro de prompts para la sección "Uso de IA" del informe
 ```
 
@@ -81,7 +82,7 @@ Los scripts usan rutas relativas (`data/...`, `app/...`), así que **hay que cor
 - [x] `app/main.py`: API FastAPI (`/metricas`, `/cronograma?umbral=`) con CORS
 - [x] `frontend/`: grafo coloreado, grilla de cronograma y slider de umbral
 - [x] `README.md`: guía de instalación y ejecución completa
-- [ ] Probar el README desde cero (clonar en otra carpeta y seguir los pasos)
+- [x] `proyecto.py`: instalar y levantar con un solo comando. Probado desde cero en un clon nuevo (Windows, Python 3.13 del sistema): `instalar`, `entrenar` y `levantar` andan, y Ctrl+C libera los dos puertos
 - [ ] Informe y capturas
 
 ## Formato de la API (acordado por el grupo)
@@ -122,7 +123,14 @@ Los tipos de `frontend/src/api.ts` son copia de estos modelos: si cambia uno, ha
 
 ## Cómo correr
 
-Entorno virtual en `backend/.venv`:
+**Forma rápida**, desde la raíz del proyecto (no hace falta activar el entorno):
+- La primera vez: `python proyecto.py instalar`
+- Para levantar la API y el frontend juntos: `python proyecto.py levantar` (Ctrl+C cierra los dos)
+- Para regenerar el dataset y reentrenar: `python proyecto.py entrenar`
+
+`proyecto.py` no usa `--reload`: si se cambia código del backend, hay que cerrarlo y volver a levantarlo. Para desarrollar con recarga automática, usar los comandos manuales de abajo.
+
+**A mano.** Entorno virtual en `backend/.venv`:
 
 - **Linux / Git Bash:** `source .venv/bin/activate`
 - **Windows:** `.venv\Scripts\activate`

@@ -11,6 +11,29 @@ Sistema inteligente de asignación de turnos de examen sin solapamiento de alumn
 
 ---
 
+## Inicio rápido (recomendado)
+
+El script `proyecto.py` hace todos los pasos de las secciones 2 a 5 con un solo comando. Funciona igual en Windows, Linux y Mac, y no hace falta activar el entorno virtual. Desde la raíz del proyecto:
+
+```bash
+python proyecto.py instalar   # una sola vez: crea backend/.venv e instala las dependencias del backend y del frontend
+python proyecto.py levantar   # arranca la API y el frontend juntos
+```
+
+Después se abre `http://localhost:5173` en el navegador. **Ctrl+C** en esa terminal cierra la API y el frontend.
+
+| Comando | Qué hace |
+|---|---|
+| `python proyecto.py instalar` | Comprueba Python y Node, crea el entorno virtual, instala `requirements.txt` y corre `npm install` |
+| `python proyecto.py entrenar` | (Opcional) Regenera el dataset y vuelve a entrenar el modelo. No hace falta: el repo ya trae `modelo.pkl` |
+| `python proyecto.py levantar` | Arranca la API (puerto 8000) y el frontend (puerto 5173). Si uno de los dos se cae, cierra el otro |
+
+En Linux y Mac puede que el comando sea `python3` en vez de `python`.
+
+Si algo falla, el script muestra qué falta (por ejemplo, Node menor que 20 o un puerto ocupado). También se puede hacer todo a mano con los pasos de abajo.
+
+---
+
 ## 2. Instalación del Backend
 
 Desde la raíz del proyecto:
@@ -145,6 +168,7 @@ En las vistas por carrera y año y por turno, al pasar el mouse por una materia 
 │       ├── index.css                   # Estilos y colores (modo claro y oscuro)
 │       ├── paginas/                    # Una página por dirección: Inicio, Grafo, Cronograma, Modelo
 │       └── componentes/                # Slider, grafos (fuerzas, grilla, por turno), leyenda, cronograma, métricas
+├── proyecto.py                         # Atajos: instalar, entrenar y levantar con un solo comando
 ├── prompts_ia.md                       # Registro de prompts e interacción con IA
 └── README.md                           # Guía de instalación y ejecución
 ```
