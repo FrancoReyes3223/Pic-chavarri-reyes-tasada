@@ -21,7 +21,7 @@ pares de materias → **modelo de regresión** predice estudiantes afectados →
 - Usamos **scripts `.py`, no notebooks de Jupyter**.
 - **El test no se usa para elegir nada.** Los hiperparámetros y el modelo ganador se eligen con `GridSearchCV` sobre train, con `GroupKFold` por período (cada fold deja afuera un período entero). El test (períodos 7 y 8) se mira una sola vez, al final.
 - **KNN va con `StandardScaler`** dentro de un pipeline, porque usa distancias. La regresión lineal y el árbol van sin escalar.
-- El frontend tiene **una página por sección** con `react-router-dom` (necesita Node 20+): `/`, `/grafo`, `/cronograma`, `/modelo`.
+- El frontend tiene **una página por sección** con `react-router-dom` (necesita Node 20+): `/`, `/grafo` y `/cronograma`. La página `/modelo` se sacó; el endpoint `/metricas` quedó en la API aunque el frontend no lo usa.
 - El grafo se ve de **tres formas**, y nos quedamos con las tres porque cada una muestra algo distinto:
   - `/grafo`, **por cercanía**: `react-force-graph-2d` (simulación de fuerzas). Arrastrar solo mueve nodos (sin desplazar el gráfico), el nodo queda fijo al soltarlo, el zoom automático se hace solo con datos nuevos y "Reacomodar" suelta todo.
   - `/grafo/grilla`, **por carrera y año**, y `/grafo/turnos`, **por turno**: SVG propio (`GrafoSvg.tsx`) con posiciones fijas y resaltado de conflictos al pasar el mouse.
@@ -64,9 +64,9 @@ frontend/                         React + TypeScript (Vite)
   src/App.tsx                     rutas, barra de navegación, umbral compartido y pedidos a la API
   src/colores.ts                  color de cada turno (usa las variables de index.css)
   src/index.css                   estilos y colores (claro y oscuro)
-  src/paginas/                    Inicio, PaginaGrafo (3 vistas), PaginaCronograma, PaginaModelo, NoEncontrada
+  src/paginas/                    Inicio, PaginaGrafo (3 vistas), PaginaCronograma, NoEncontrada
   src/componentes/                ControlUmbral (slider), Resumen, GrafoConflictos (fuerzas), GrafoSvg + GrafoGrilla
-                                  + GrafoPorTurno (vistas fijas), LeyendaTurnos, Cronograma, TablaMetricas
+                                  + GrafoPorTurno (vistas fijas), LeyendaTurnos, Cronograma
 proyecto.py                       atajos multiplataforma: `instalar`, `entrenar` y `levantar` (se corre desde la raíz)
 prompts_ia.md                     registro de prompts para la sección "Uso de IA" del informe
 ```

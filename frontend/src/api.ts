@@ -62,24 +62,6 @@ export interface Cronograma {
   }
 }
 
-// Una fila de la tabla de comparación de modelos.
-export interface MetricaModelo {
-  modelo: string
-  hiperparametro: string
-  mae_cv: number
-  mae_test: number
-  r2_test: number
-  es_ganador: boolean
-}
-
-// GET /metricas
-export interface Metricas {
-  modelos: MetricaModelo[]
-  modelo_seleccionado: string
-  criterio_seleccion: string
-  descripcion: string
-}
-
 // ---------------------------------------------------------------------------
 // Funciones que llaman a la API.
 // ---------------------------------------------------------------------------
@@ -100,8 +82,4 @@ export function obtenerEstado(): Promise<EstadoApi> {
 
 export function obtenerCronograma(umbral: number): Promise<Cronograma> {
   return pedir<Cronograma>(`/cronograma?umbral=${umbral}`)
-}
-
-export function obtenerMetricas(): Promise<Metricas> {
-  return pedir<Metricas>('/metricas')
 }

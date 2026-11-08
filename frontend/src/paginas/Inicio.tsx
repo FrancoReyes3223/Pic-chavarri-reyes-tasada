@@ -17,7 +17,6 @@ function Inicio() {
             Un modelo de regresión estima, para cada par de materias, cuántos estudiantes
             querrían rendir las dos.
           </p>
-          <Link to="/modelo">Ver el modelo</Link>
         </li>
         <li>
           <h2>2. Armar el grafo</h2>

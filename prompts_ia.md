@@ -109,7 +109,7 @@ Resultado: gana KNN con k=15 (MAE CV 0.946; MAE test 1.021, R² 0.886). El árbo
 
 **Por qué fue útil:** permitió al integrante B dejar la API operativa y al integrante C comenzar a trabajar en el frontend sin tener que esperar a que se termine la lógica de grafos.
 
-
+---
 
 ## 6. Cómo construir un grafo y qué librerías usar
 
@@ -122,19 +122,7 @@ Resultado: gana KNN con k=15 (MAE CV 0.946; MAE test 1.021, R² 0.886). El árbo
 
 ---
 
-## 7. Reemplazo de comprensiones por bucles comunes
-
-**Fecha:** 06/11/2026
-**Prompt:**
-> no vimos compresiones, asi que intenta evitar esa sintaxis en todos los lados que puedas
-
-**Resultado:** la IA reemplazó por bucles `for` las 14 comprensiones y expresiones generadoras que había en [`coloreo.py`](backend/app/coloreo.py), [`main.py`](backend/app/main.py) y [`generar_dataset.py`](backend/data/generar_dataset.py), y sacó una variable sin uso de `main.py`. Comparamos las salidas del cronograma real, del mock y del coloreo antes y después, y regeneramos el dataset: todo dio idéntico.
-
-**Correcciones nuestras:** le pedimos evitar una sintaxis que no vimos en clase, para poder explicar cada línea en la defensa.
-
----
-
-## 8. Proyecto base del frontend y conexión con la API
+## 7. Proyecto base del frontend y conexión con la API
 
 **Fecha:** 06/11/2026
 **Prompt:**

@@ -171,17 +171,6 @@ a {
   margin: 0.5rem 0 0.75rem;
 }
 
-/* Listas de texto de la página del modelo. */
-.lista {
-  max-width: 44rem;
-  margin: 0.5rem 0 0;
-  padding-left: 1.25rem;
-}
-
-.lista li {
-  margin-top: 0.375rem;
-}
-
 /* Línea de estado de la conexión con la API (va en la barra, a la derecha). */
 .estado {
   display: flex;
@@ -211,11 +200,6 @@ a {
 }
 
 /* Textos de apoyo. */
-.texto {
-  margin: 0.5rem 0 0;
-  max-width: 44rem;
-}
-
 .ayuda {
   margin: 0.75rem 0 0;
   max-width: 44rem;
@@ -305,18 +289,6 @@ code {
   font-size: 0.9em;
 }
 
-/* Secciones de la página (cronograma, métricas). */
-.seccion {
-  margin-top: 3.5rem;
-}
-
-.seccion h2 {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 800;
-  font-stretch: 75%;
-  line-height: 1.1;
-}
 
 /* Grafo de conflictos. */
 .grafo {
@@ -587,57 +559,6 @@ code {
   display: block;
   font-size: 0.8125rem;
   color: var(--tinta-suave);
-}
-
-/* Tabla de métricas. */
-.tabla-contenedor {
-  margin-top: 1.25rem;
-  overflow-x: auto; /* en celular la tabla se desplaza de costado, no rompe la página */
-}
-
-.tabla-metricas {
-  width: 100%;
-  max-width: 52rem;
-  border-collapse: collapse;
-  font-size: 0.9375rem;
-}
-
-.tabla-metricas th,
-.tabla-metricas td {
-  padding: 0.625rem 1rem 0.625rem 0;
-  border-bottom: 1px solid var(--linea);
-  text-align: left;
-  white-space: nowrap;
-}
-
-.tabla-metricas thead th {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--tinta-suave);
-}
-
-.tabla-metricas tbody th {
-  font-weight: 400;
-}
-
-.tabla-metricas .numero {
-  text-align: right;
-}
-
-/* Fila del modelo elegido: en negrita y con la marca "elegido". */
-.tabla-metricas tr.ganador th,
-.tabla-metricas tr.ganador td {
-  font-weight: 700;
-}
-
-.marca-elegido {
-  margin-left: 0.5rem;
-  padding: 0.0625rem 0.375rem;
-  border: 1px solid var(--acento);
-  border-radius: 3px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--acento);
 }
 
 @media (max-width: 48rem) {

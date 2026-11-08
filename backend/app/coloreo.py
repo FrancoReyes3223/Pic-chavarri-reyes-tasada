@@ -96,15 +96,16 @@ def contar_materias_por_turno(turno_por_materia):
     return materias_por_turno
 
 
-def clique_mas_grande(grafo_conflictos):
+def mayor_subgrafo_completo(grafo_conflictos):
     """
-    Tamaño de la clique más grande: un grupo de materias en conflicto todas con todas.
+    Tamaño del subgrafo completo más grande: un grupo de materias en conflicto todas con todas.
     Es el mínimo teórico de turnos, porque cada materia del grupo necesita un turno propio.
     """
     tamanio_maximo = 0
-    for clique in nx.find_cliques(grafo_conflictos):
-        if len(clique) > tamanio_maximo:
-            tamanio_maximo = len(clique)
+    # nx.find_cliques devuelve los subgrafos completos maximales (en inglés, "cliques").
+    for grupo in nx.find_cliques(grafo_conflictos):
+        if len(grupo) > tamanio_maximo:
+            tamanio_maximo = len(grupo)
     return tamanio_maximo
 
 
@@ -117,7 +118,7 @@ if __name__ == '__main__':
 
     # "Mas" y "Menos": cuántas materias tienen el turno más cargado y el más vacío.
     print(f'{"Umbral":>8} {"Aristas":>8} {"Turnos":>7} {"Mas":>5} {"Menos":>6} '
-          f'{"Clique":>7} {"networkx":>9} {"Valido":>7}')
+          f'{"Completo":>9} {"networkx":>9} {"Valido":>7}')
     for umbral_afectados in [0.5, 1, 2, 3, 5, 8, 10, 15]:
         grafo_conflictos = construir_grafo(materias, afectados_por_par, umbral_afectados)
         turno_por_materia = colorear_grafo(grafo_conflictos)
@@ -128,5 +129,5 @@ if __name__ == '__main__':
 
         print(f'{umbral_afectados:>8} {grafo_conflictos.number_of_edges():>8} '
               f'{cantidad_de_turnos(turno_por_materia):>7} {max(materias_por_turno.values()):>5} '
-              f'{min(materias_por_turno.values()):>6} {clique_mas_grande(grafo_conflictos):>7} '
+              f'{min(materias_por_turno.values()):>6} {mayor_subgrafo_completo(grafo_conflictos):>9} '
               f'{turnos_networkx:>9} {str(es_valido):>7}')

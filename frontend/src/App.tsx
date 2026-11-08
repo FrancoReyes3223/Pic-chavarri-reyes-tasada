@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
-import { URL_API, obtenerCronograma, obtenerEstado, obtenerMetricas } from './api'
-import type { Cronograma as DatosCronograma, EstadoApi, Metricas } from './api'
+import { URL_API, obtenerCronograma, obtenerEstado } from './api'
+import type { Cronograma as DatosCronograma, EstadoApi } from './api'
 import Inicio from './paginas/Inicio'
 import NoEncontrada from './paginas/NoEncontrada'
 import PaginaCronograma from './paginas/PaginaCronograma'
 import PaginaGrafo from './paginas/PaginaGrafo'
-import PaginaModelo from './paginas/PaginaModelo'
 
 // Umbral con el que arranca la página (después lo mueven los sliders de /grafo y /cronograma).
 const UMBRAL_INICIAL = 5
@@ -21,7 +20,6 @@ const ESPERA_SLIDER = 200
 function App() {
   // Lo que devuelve la API. Empiezan en null porque al abrir la página todavía no llegó nada.
   const [estadoApi, setEstadoApi] = useState<EstadoApi | null>(null)
-  const [metricas, setMetricas] = useState<Metricas | null>(null)
   const [cronograma, setCronograma] = useState<DatosCronograma | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -29,17 +27,16 @@ function App() {
   const [umbral, setUmbral] = useState(UMBRAL_INICIAL)
   const [cargando, setCargando] = useState(true)
 
-  // Estado de la API y métricas: no dependen del umbral, se piden una sola vez.
+  // Estado de la API: no depende del umbral, se pide una sola vez.
   useEffect(() => {
-    async function cargarDatosFijos() {
+    async function cargarEstado() {
       try {
         setEstadoApi(await obtenerEstado())
-        setMetricas(await obtenerMetricas())
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e))
       }
     }
-    cargarDatosFijos()
+    cargarEstado()
   }, [])
 
   // Cronograma: se vuelve a pedir cada vez que cambia el umbral.
@@ -85,7 +82,6 @@ function App() {
             <ul className="navegacion">
               <li><NavLink to="/grafo">Grafo</NavLink></li>
               <li><NavLink to="/cronograma">Cronograma</NavLink></li>
-              <li><NavLink to="/modelo">Modelo</NavLink></li>
             </ul>
           </nav>
           <LineaDeEstado estadoApi={estadoApi} error={error} />
@@ -157,7 +153,6 @@ function App() {
               />
             }
           />
-          <Route path="/modelo" element={<PaginaModelo metricas={metricas} />} />
           <Route path="*" element={<NoEncontrada />} />
         </Routes>
       </main>

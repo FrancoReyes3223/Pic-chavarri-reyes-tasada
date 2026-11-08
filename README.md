@@ -100,7 +100,7 @@ uvicorn app.main:app --reload --port 8000
 | Método | Endpoint | Descripción |
 |---|---|---|
 | `GET` | `/` | Health check y estado del servicio |
-| `GET` | `/metricas` | Tabla comparativa de modelos (MAE, R²) y ganador |
+| `GET` | `/metricas` | Tabla comparativa de modelos (MAE, R²) y ganador (el frontend no la usa; se puede ver en `/docs`) |
 | `GET` | `/cronograma?umbral=5.0` | Grafo de conflictos y asignación de materias por turno |
 
 ---
@@ -128,7 +128,6 @@ Si ya tenían el frontend instalado de antes, vuelvan a correr `npm install` des
 | `/` | Inicio: los tres pasos del sistema (predecir, armar el grafo, colorear) |
 | `/grafo` | Slider de umbral, resumen y grafo de conflictos coloreado por turno, con la leyenda de colores |
 | `/cronograma` | Slider de umbral, resumen y grilla con las materias de cada turno |
-| `/modelo` | Qué predice el modelo, cómo se evaluó y la tabla comparativa de modelos |
 
 El umbral es uno solo para toda la aplicación: el slider de `/grafo` y el de `/cronograma` muestran y cambian el mismo valor (al recargar la página vuelve a 5).
 
@@ -166,8 +165,8 @@ En las vistas por carrera y año y por turno, al pasar el mouse por una materia 
 │       ├── api.ts                      # Tipos del JSON y llamadas a la API
 │       ├── colores.ts                  # Color de cada turno
 │       ├── index.css                   # Estilos y colores (modo claro y oscuro)
-│       ├── paginas/                    # Una página por dirección: Inicio, Grafo, Cronograma, Modelo
-│       └── componentes/                # Slider, grafos (fuerzas, grilla, por turno), leyenda, cronograma, métricas
+│       ├── paginas/                    # Una página por dirección: Inicio, Grafo, Cronograma
+│       └── componentes/                # Slider, grafos (fuerzas, grilla, por turno), leyenda, cronograma
 ├── proyecto.py                         # Atajos: instalar, entrenar y levantar con un solo comando
 ├── prompts_ia.md                       # Registro de prompts e interacción con IA
 └── README.md                           # Guía de instalación y ejecución
