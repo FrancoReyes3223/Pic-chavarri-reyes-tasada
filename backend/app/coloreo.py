@@ -12,18 +12,20 @@ import networkx as nx
 
 def ordenar_materias(grafo_conflictos):
     """Ordena las materias de mayor a menor cantidad de estudiantes en conflicto (grado ponderado)."""
-    # El signo menos ordena de mayor a menor. Los empates se resuelven por id,
-    # así el mismo umbral siempre da el mismo cronograma.
-    return sorted(
-        grafo_conflictos.nodes,
-        key=lambda materia_id: (-grafo_conflictos.degree(materia_id, weight='weight'), materia_id),
-    )
+    # grafo_conflictos: grafo de networkx. Devuelve una lista de str (ids de materias).
+    def clave_de_orden(materia_id):  # materia_id: str. Devuelve una tupla (float, str).
+        # El signo menos ordena de mayor a menor. Los empates se resuelven por id,
+        # así el mismo umbral siempre da el mismo cronograma.
+        return (-grafo_conflictos.degree(materia_id, weight='weight'), materia_id)
+
+    return sorted(grafo_conflictos.nodes, key=clave_de_orden)
 
 
 def turnos_de_vecinas(grafo_conflictos, materia_id, turno_por_materia):
     """Devuelve el conjunto de turnos que ya usan las materias en conflicto con materia_id."""
-    turnos_ocupados = set()
-    for vecina in grafo_conflictos.neighbors(materia_id):
+    # materia_id: str. turno_por_materia: diccionario {str: int}.
+    turnos_ocupados = set()  # conjunto de int (turnos)
+    for vecina in grafo_conflictos.neighbors(materia_id):  # vecina: str (los nodos son ids de materias)
         # Las vecinas que todavía no tienen turno no restringen a esta materia.
         if vecina in turno_por_materia:
             turnos_ocupados.add(turno_por_materia[vecina])
@@ -35,8 +37,9 @@ def elegir_turno(turnos_ocupados, materias_por_turno):
     De los turnos que ya existen y no están ocupados, devuelve el que tiene menos materias.
     Si están todos ocupados, devuelve el número del turno nuevo que hay que abrir.
     """
-    turno_elegido = None
-    for turno in range(len(materias_por_turno)):
+    # turnos_ocupados: conjunto de int. materias_por_turno: lista de int. Devuelve un int.
+    turno_elegido = None  # int, o None mientras no se encontró ningún turno libre
+    for turno in range(len(materias_por_turno)):  # turno: int
         if turno in turnos_ocupados:
             continue
         # Con "<" (y no "<="), si dos turnos empatan queda el de número más bajo.
@@ -54,12 +57,12 @@ def colorear_grafo(grafo_conflictos):
     Asigna a cada materia, de los turnos que no usa ninguna vecina, el que tiene menos materias.
     Si todos los turnos tienen alguna vecina, abre uno nuevo. Devuelve {materia_id: turno}.
     """
-    turno_por_materia = {}
-    materias_por_turno = []  # materias_por_turno[t] = cuántas materias tiene el turno t
+    turno_por_materia = {}  # diccionario {materia_id (str): turno (int)}
+    materias_por_turno = []  # lista de int: materias_por_turno[t] = cuántas materias tiene el turno t
 
-    for materia_id in ordenar_materias(grafo_conflictos):
-        turnos_ocupados = turnos_de_vecinas(grafo_conflictos, materia_id, turno_por_materia)
-        turno = elegir_turno(turnos_ocupados, materias_por_turno)
+    for materia_id in ordenar_materias(grafo_conflictos):  # materia_id: str
+        turnos_ocupados = turnos_de_vecinas(grafo_conflictos, materia_id, turno_por_materia)  # conjunto de int
+        turno = elegir_turno(turnos_ocupados, materias_por_turno)  # int
 
         if turno == len(materias_por_turno):
             materias_por_turno.append(0)  # se abrió un turno nuevo
@@ -90,8 +93,8 @@ def cantidad_de_turnos(turno_por_materia):
 
 def contar_materias_por_turno(turno_por_materia):
     """Devuelve {turno: cantidad de materias en ese turno}."""
-    materias_por_turno = {}
-    for turno in turno_por_materia.values():
+    materias_por_turno = {}  # diccionario {turno (int): cantidad de materias (int)}
+    for turno in turno_por_materia.values():  # turno: int
         materias_por_turno[turno] = materias_por_turno.get(turno, 0) + 1
     return materias_por_turno
 
