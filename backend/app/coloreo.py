@@ -24,23 +24,23 @@ def ordenar_materias(grafo_conflictos):
 def turnos_de_vecinas(grafo_conflictos, materia_id, turno_por_materia):
     """Devuelve el conjunto de turnos que ya usan las materias en conflicto con materia_id."""
     # materia_id: str. turno_por_materia: diccionario {str: int}.
-    turnos_ocupados = set()  # conjunto de int (turnos)
+    turnos_prohibidos = set()  # conjunto de int (turnos)
     for vecina in grafo_conflictos.neighbors(materia_id):  # vecina: str (los nodos son ids de materias)
         # Las vecinas que todavía no tienen turno no restringen a esta materia.
         if vecina in turno_por_materia:
-            turnos_ocupados.add(turno_por_materia[vecina])
-    return turnos_ocupados
+            turnos_prohibidos.add(turno_por_materia[vecina])
+    return turnos_prohibidos
 
 
-def elegir_turno(turnos_ocupados, materias_por_turno):
+def elegir_turno(turnos_prohibidos, materias_por_turno):
     """
-    De los turnos que ya existen y no están ocupados, devuelve el que tiene menos materias.
-    Si están todos ocupados, devuelve el número del turno nuevo que hay que abrir.
+    De los turnos que ya existen y no están prohibidos, devuelve el que tiene menos materias.
+    Si están todos prohibidos, devuelve el número del turno nuevo que hay que abrir.
     """
-    # turnos_ocupados: conjunto de int. materias_por_turno: lista de int. Devuelve un int.
+    # turnos_prohibidos: conjunto de int. materias_por_turno: lista de int. Devuelve un int.
     turno_elegido = None  # int, o None mientras no se encontró ningún turno libre
     for turno in range(len(materias_por_turno)):  # turno: int
-        if turno in turnos_ocupados:
+        if turno in turnos_prohibidos:
             continue
         # Con "<" (y no "<="), si dos turnos empatan queda el de número más bajo.
         if turno_elegido is None or materias_por_turno[turno] < materias_por_turno[turno_elegido]:
@@ -61,8 +61,8 @@ def colorear_grafo(grafo_conflictos):
     materias_por_turno = []  # lista de int: materias_por_turno[t] = cuántas materias tiene el turno t
 
     for materia_id in ordenar_materias(grafo_conflictos):  # materia_id: str
-        turnos_ocupados = turnos_de_vecinas(grafo_conflictos, materia_id, turno_por_materia)  # conjunto de int
-        turno = elegir_turno(turnos_ocupados, materias_por_turno)  # int
+        turnos_prohibidos = turnos_de_vecinas(grafo_conflictos, materia_id, turno_por_materia)  # conjunto de int
+        turno = elegir_turno(turnos_prohibidos, materias_por_turno)  # int
 
         if turno == len(materias_por_turno):
             materias_por_turno.append(0)  # se abrió un turno nuevo

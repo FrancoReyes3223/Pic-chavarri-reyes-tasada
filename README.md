@@ -156,7 +156,8 @@ En las vistas por carrera y año y por turno, al pasar el mouse por una materia 
 │   │   ├── generar_dataset.py          # Script generador sintético
 │   │   ├── materias.csv                # Catálogo de 45 asignaturas
 │   │   ├── pares_historico.csv         # Datos históricos para entrenamiento
-│   │   └── pares_proximo_periodo.csv   # Pares del periodo a planificar
+│   │   ├── pares_proximo_periodo.csv   # Pares del periodo a planificar
+│   │   └── comparacion_modelos.txt     # Métricas de cada modelo
 │   ├── entrenamiento.py                # EDA, entrenamiento y selección de modelo
 │   └── requirements.txt                # Dependencias de Python
 ├── frontend/                           # Aplicación React + Vite + TypeScript

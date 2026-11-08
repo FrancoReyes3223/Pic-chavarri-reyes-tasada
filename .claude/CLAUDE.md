@@ -50,6 +50,7 @@ backend/
   data/materias.csv               45 materias (3 carreras × 5 años × 3 materias) = nodos
   data/pares_historico.csv        990 pares × 8 períodos = 7920 filas (entrenamiento)
   data/pares_proximo_periodo.csv  features del período a planificar, sin target
+  data/comparacion_modelos.txt    métricas de cada modelo (lo genera entrenamiento.py)
   entrenamiento.py                EDA, CV, evaluación en test, gráfico de overfitting, análisis de errores y guardado del modelo
   requirements.txt                numpy, pandas, scikit-learn, networkx, fastapi, uvicorn, matplotlib
   app/modelo.pkl                  modelo ganador (lo genera entrenamiento.py)

@@ -92,6 +92,7 @@ print(f'\nMejor modelo según CV: {mejor_nombre}')
 print('\n--- Evaluación en test (períodos 7-8) ---')
 print(f'{"Modelo":<18} {"MAE CV":>8} {"MAE train":>10} {"MAE test":>10} {"RMSE test":>10} {"R2 test":>10}')
 print('-' * 70)
+filas_comparacion = []   # una fila por modelo, para guardar la tabla en un CSV
 for nombre, busqueda in resultados.items():
     modelo = busqueda.best_estimator_
     pred_test = modelo.predict(X_test)
@@ -100,6 +101,25 @@ for nombre, busqueda in resultados.items():
     rmse_test = root_mean_squared_error(y_test, pred_test)
     r2_test = r2_score(y_test, pred_test)
     print(f'{nombre:<18} {-busqueda.best_score_:>8.3f} {mae_train:>10.3f} {mae_test:>10.3f} {rmse_test:>10.3f} {r2_test:>10.3f}')
+    # La clave de KNN es 'kneighborsregressor__n_neighbors': nos quedamos con lo que sigue a '__'.
+    hiperparametro = '-'
+    for clave, valor in busqueda.best_params_.items():
+        hiperparametro = f'{clave.split("__")[-1]}={valor}'
+    filas_comparacion.append({
+        'Modelo': nombre,
+        'Hiperparametro': hiperparametro,
+        'MAE CV': f'{-busqueda.best_score_:.3f}',
+        'MAE train': f'{mae_train:.3f}',
+        'MAE test': f'{mae_test:.3f}',
+        'RMSE test': f'{rmse_test:.3f}',
+        'R2 test': f'{r2_test:.3f}',
+        'Ganador': 'si' if nombre == mejor_nombre else 'no',
+    })
+
+# Se guarda como texto alineado en columnas, para leerlo directamente.
+with open('data/comparacion_modelos.txt', 'w', encoding='utf-8') as archivo:
+    archivo.write(pd.DataFrame(filas_comparacion).to_string(index=False) + '\n')
+print('\nComparación guardada en data/comparacion_modelos.txt')
 
 
 # --- Análisis de overfitting del árbol ---

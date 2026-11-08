@@ -1,0 +1,4 @@
+          Modelo Hiperparametro MAE CV MAE train MAE test RMSE test R2 test Ganador
+Regresion Lineal              -  1.042     1.040    1.069     1.929   0.876      no
+           Arbol    max_depth=5  0.989     0.916    1.038     1.984   0.869      no
+             KNN n_neighbors=15  0.946     0.887    1.021     1.855   0.886      si
